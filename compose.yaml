@@ -1,11 +1,11 @@
 services:
   api:
-    image: thomaslaforge/shortcuts-back
+    image: ghcr.io/alexandre74739/shortcuts-back
     volumes:
       - ./content:/app/content
 
   frontend:
-    image: thomaslaforge/shortcuts-front
+    image: ghcr.io/alexandre74739/shortcuts-front
     environment:
       API_PROXY_TARGET: http://api:5000
     ports:
