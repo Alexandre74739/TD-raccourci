@@ -3,7 +3,7 @@
 // Contour de focus de la charte : 2px Toxine avec un décalage.
 @mixin focus-ring($offset: 3px) {
   &:focus-visible {
-    outline: 2px solid var(--toxine);
+    outline: 2px solid var(--focus);
     outline-offset: $offset;
   }
 }
@@ -11,7 +11,7 @@
 // Effet "cartoon" : bordure épaisse et ombre portée nette, décalée.
 // Au survol l'élément se soulève, au clic il s'enfonce jusqu'à toucher son ombre.
 // La couleur de l'ombre passe par --cartoon-shadow pour pouvoir la changer selon l'état.
-@mixin cartoon($shadow: var(--papier), $offset: 4px, $lift: 2px) {
+@mixin cartoon($shadow: var(--fg), $offset: 4px, $lift: 2px) {
   --cartoon-shadow: #{$shadow};
   border: 2px solid var(--abysse);
   box-shadow: $offset $offset 0 var(--cartoon-shadow);

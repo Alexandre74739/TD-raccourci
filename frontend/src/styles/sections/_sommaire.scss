@@ -4,7 +4,7 @@
 // En-tête (titre + recherche), puis la grille de cartes (src/styles/components/_card.scss).
 .sommaire {
   padding-top: 80px;
-  color: var(--papier);
+  color: var(--fg);
   font-family: var(--font-mono);
 
   &-head {
@@ -41,7 +41,7 @@
   &-lead {
     max-width: 44ch;
     margin: 16px 0 0;
-    color: var(--papier-60);
+    color: var(--fg-60);
     font-size: 15px;
     line-height: 1.6;
   }
@@ -53,7 +53,7 @@
     &-label {
       display: block;
       margin-bottom: 10px;
-      color: var(--papier-60);
+      color: var(--fg-60);
       font-size: 12px;
       font-weight: 500;
       letter-spacing: 0.08em;
@@ -72,7 +72,7 @@
       width: 18px;
       translate: 0 -50%;
       fill: none;
-      stroke: var(--papier-60);
+      stroke: var(--fg-60);
       stroke-width: 2;
       stroke-linecap: round;
       pointer-events: none;
@@ -82,25 +82,25 @@
       margin: 0;
       padding: 15px 16px 15px 46px;
       // Papier/60 : le contour du champ garde un contraste d'au moins 3:1 avec le fond.
-      border: 2px solid var(--papier-60);
+      border: 2px solid var(--fg-60);
       border-radius: 10px;
-      background: var(--charbon);
-      color: var(--papier);
+      background: var(--surface);
+      color: var(--fg);
       color-scheme: dark;
       font-size: 14px;
       transition: border-color 0.15s;
 
       &::placeholder {
-        color: var(--papier-60);
+        color: var(--fg-60);
       }
 
       &:hover,
       &:focus {
-        border-color: var(--papier);
+        border-color: var(--fg);
       }
 
       &:focus {
-        outline: 2px solid var(--toxine);
+        outline: 2px solid var(--focus);
         outline-offset: 3px;
       }
     }
@@ -114,9 +114,9 @@
     justify-content: center;
     grid-column: span 2;
     padding: 40px 24px;
-    border: 2px dashed var(--papier-30);
+    border: 2px dashed var(--fg-30);
     border-radius: 16px;
-    color: var(--papier);
+    color: var(--fg);
     font-size: 15px;
     text-align: center;
 

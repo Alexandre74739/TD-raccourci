@@ -2,10 +2,10 @@
 .notice {
   max-width: 640px;
   padding: 32px;
-  border: 2px solid var(--papier-12);
+  border: 2px solid var(--fg-12);
   border-radius: 16px;
-  background: var(--charbon);
-  color: var(--papier);
+  background: var(--surface);
+  color: var(--fg);
   font-family: var(--font-mono);
 
   h1 {
@@ -18,6 +18,6 @@
 
   p {
     margin: 0 0 24px;
-    color: var(--papier-60);
+    color: var(--fg-60);
   }
 }
