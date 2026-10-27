@@ -127,9 +127,13 @@ function setupSpin(trigger, target, swirlContainer) {
   });
 }
 
-const cta = document.querySelector(".header .button--primary");
-const ctaIcon = cta?.querySelector(".cta-icon");
-setupSpin(cta, ctaIcon?.querySelector(".cta-plus"), ctaIcon);
+// Bouton avec une icône "+" (.cta-icon > .cta-plus) : aussi utilisé par le hero.
+export function setupCtaSpin(cta) {
+  const ctaIcon = cta?.querySelector(".cta-icon");
+  setupSpin(cta, ctaIcon?.querySelector(".cta-plus"), ctaIcon);
+}
+
+setupCtaSpin(document.querySelector(".header .button--primary"));
 
 const themeToggle = document.querySelector(".header .theme-toggle");
 setupSpin(themeToggle, themeToggle?.querySelector(".theme-icon"), themeToggle);
