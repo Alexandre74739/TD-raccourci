@@ -3,6 +3,7 @@
 
 import { api, escapeHtml as e } from "./api.js";
 import { setupCtaSpin } from "./header.js";
+import { bindKeyField, keyField } from "./key-input.js";
 import { keysTemplate } from "./sections/sommaire.js";
 
 // Icônes au trait (24 × 24) : la couleur et l'épaisseur viennent du CSS (.icon).
@@ -30,28 +31,6 @@ const ICONS = {
 
 export function icon(name) {
   return `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`;
-}
-
-// Modificateurs à activer d'un clic (utile sur mobile, sans clavier physique),
-// avec les noms que l'API accepte pour chacun (backend/keys.py).
-const MODIFIERS = {
-  Ctrl: ["ctrl", "control", "contrôle", "controle"],
-  Alt: ["alt", "option", "opt", "altgr", "⌥"],
-  Maj: ["maj", "majuscule", "shift", "⇧"],
-  Cmd: ["cmd", "command", "commande", "meta", "win", "windows", "super", "⌘"],
-};
-
-function splitKeys(value) {
-  return value
-    .split("+")
-    .map((key) => key.trim())
-    .filter(Boolean);
-}
-
-function modifierOf(key) {
-  return Object.keys(MODIFIERS).find((name) =>
-    MODIFIERS[name].includes(key.toLowerCase()),
-  );
 }
 
 // Barre d'outils Markdown : la sélection est entourée par la syntaxe, sinon un exemple est
@@ -111,6 +90,8 @@ function fieldHead(id, iconName, label, counter = "") {
 }
 
 const SUBMIT_LABEL = "Publier la fiche";
+// Touches d'exemple de l'aperçu, tant que la combinaison n'est pas faite.
+const PREVIEW_KEYS = "Ctrl+Shift+P";
 
 export function showForm(app) {
   app.innerHTML = `
@@ -143,20 +124,7 @@ export function showForm(app) {
 
         <fieldset class="form-step">
           <legend class="form-step-title"><span class="form-step-number" aria-hidden="true">02</span> Les touches</legend>
-          <div class="field">
-            ${fieldHead("keys", "keyboard", "Combinaison")}
-            <input id="new-keys" class="field-keys" name="keys" required maxlength="120" autocomplete="off" spellcheck="false" placeholder="Ctrl + Maj + P" aria-describedby="new-keys-hint" />
-            <div class="key-toggles" role="group" aria-labelledby="key-toggles-label">
-              <span id="key-toggles-label" class="key-toggles-label">Modificateurs</span>
-              ${Object.keys(MODIFIERS)
-                .map(
-                  (name) =>
-                    `<button class="key-toggle" type="button" aria-pressed="false" data-modifier="${name}">${name}</button>`,
-                )
-                .join("")}
-            </div>
-            <p id="new-keys-hint" class="field-hint">Séparez les touches par « + », avec une seule touche principale. Pour la touche +, écrivez <code>Plus</code>.</p>
-          </div>
+          ${keyField({ id: "new-keys", name: "keys", head: fieldHead("keys", "keyboard", "Combinaison") })}
         </fieldset>
 
         <fieldset class="form-step">
@@ -213,7 +181,7 @@ export function showForm(app) {
 
   const form = document.querySelector("#shortcut-form");
   const field = (name) => form.elements.namedItem(name);
-  const keys = field("keys");
+  const keys = bindKeyField(form.querySelector('[data-key-field="keys"]'));
   const content = field("content");
   const button = form.querySelector('[type="submit"]');
   const buttonLabel = button.querySelector("[data-submit-label]");
@@ -221,7 +189,6 @@ export function showForm(app) {
   const counters = form.querySelectorAll("[data-count]");
   const previews = form.querySelectorAll("[data-preview]");
   const previewKeys = form.querySelector("[data-preview-keys]");
-  const toggles = form.querySelectorAll("[data-modifier]");
   // Le texte d'exemple de l'aperçu revient quand le champ est vidé.
   for (const element of previews)
     element.dataset.fallback = element.textContent;
@@ -240,37 +207,18 @@ export function showForm(app) {
       element.textContent = value || element.dataset.fallback;
       element.classList.toggle("is-empty", !value);
     }
-    const parts = splitKeys(keys.value);
-    previewKeys.innerHTML = keysTemplate(
-      parts.length ? keys.value : keys.placeholder,
-    );
-    previewKeys.classList.toggle("is-empty", !parts.length);
-    const active = new Set(parts.map(modifierOf));
-    for (const toggle of toggles) {
-      toggle.setAttribute("aria-pressed", active.has(toggle.dataset.modifier));
-    }
+    previewKeys.innerHTML = keysTemplate(keys.value || PREVIEW_KEYS);
+    previewKeys.classList.toggle("is-empty", !keys.value);
   }
-
-  // Les modificateurs se rangent devant la touche principale, dans l'ordre des boutons.
-  form.querySelector(".key-toggles").addEventListener("click", (event) => {
-    const toggle = event.target.closest("[data-modifier]");
-    if (!toggle) return;
-    const parts = splitKeys(keys.value);
-    const active = new Set(parts.map(modifierOf));
-    const name = toggle.dataset.modifier;
-    if (active.has(name)) active.delete(name);
-    else active.add(name);
-    keys.value = [
-      ...Object.keys(MODIFIERS).filter((modifier) => active.has(modifier)),
-      ...parts.filter((part) => !modifierOf(part)),
-    ].join(" + ");
-    update();
-  });
 
   form.querySelector(".editor-toolbar").addEventListener("click", (event) => {
     const tool = event.target.closest("[data-snippet]");
     if (tool) insertSnippet(content, SNIPPETS[tool.dataset.snippet]);
   });
+
+  function showError(message) {
+    errorMessage.innerHTML = `${icon("alert")}<span>${e(message)}</span>`;
+  }
 
   form.addEventListener("input", update);
   update();
@@ -279,6 +227,12 @@ export function showForm(app) {
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     errorMessage.textContent = "";
+    // Le champ affiché est en lecture seule : le navigateur ne vérifie pas qu'il est rempli.
+    if (!keys.value) {
+      showError("Faites la combinaison de touches dans le champ Combinaison.");
+      keys.focus();
+      return;
+    }
     button.disabled = true;
     buttonLabel.textContent = "Publication…";
     try {
@@ -290,7 +244,7 @@ export function showForm(app) {
       });
       location.hash = `/raccourci/${encodeURIComponent(shortcut.slug)}`;
     } catch (error) {
-      errorMessage.innerHTML = `${icon("alert")}<span>${e(error.message)}</span>`;
+      showError(error.message);
     } finally {
       button.disabled = false;
       buttonLabel.textContent = SUBMIT_LABEL;
