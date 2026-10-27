@@ -1,7 +1,8 @@
 // Page « Ajouter un raccourci » (styles : src/styles/pages/_nouveau.scss, champs : src/styles/components/_form.scss).
 // Formulaire en trois étapes, avec l'aperçu de la carte du sommaire mis à jour pendant la saisie.
 
-import { api, escapeHtml as e } from "./api.js";
+import { api, categories, escapeHtml as e } from "./api.js";
+import { bindCategoryField, categoryField } from "./category-input.js";
 import { setupCtaSpin } from "./header.js";
 import { bindKeyField, keyField } from "./key-input.js";
 import { keysTemplate } from "./sections/sommaire.js";
@@ -111,10 +112,7 @@ export function showForm(app) {
               ${fieldHead("title", "title", "Titre", "title")}
               <input id="new-title" name="title" required maxlength="120" autocomplete="off" placeholder="Ouvrir la palette de commandes" />
             </div>
-            <div class="field">
-              ${fieldHead("category", "tag", "Catégorie", "category")}
-              <input id="new-category" name="category" required maxlength="60" autocomplete="off" placeholder="VS Code, terminal…" />
-            </div>
+            ${categoryField({ id: "new-category", head: fieldHead("category", "tag", "Catégorie", "category") })}
             <div class="field">
               ${fieldHead("description", "text", "Description courte", "description")}
               <input id="new-description" name="description" required maxlength="300" autocomplete="off" placeholder="Une phrase pour le sommaire" />
@@ -180,12 +178,20 @@ export function showForm(app) {
     </div>`;
 
   const form = document.querySelector("#shortcut-form");
-  const field = (name) => form.elements.namedItem(name);
+  // Le champ de catégorie affiché n'a pas de name : on le retrouve par son id (new-category).
+  const field = (name) =>
+    form.elements.namedItem(name) ?? form.querySelector(`#new-${name}`);
   const keys = bindKeyField(form.querySelector('[data-key-field="keys"]'));
+  const category = bindCategoryField(
+    form.querySelector("[data-category-field]"),
+  );
   const content = field("content");
   const button = form.querySelector('[type="submit"]');
   const buttonLabel = button.querySelector("[data-submit-label]");
   const errorMessage = document.querySelector("#form-error");
+  categories()
+    .then(category.setCategories)
+    .catch((error) => showError(`Catégories indisponibles : ${error.message}`));
   const counters = form.querySelectorAll("[data-count]");
   const previews = form.querySelectorAll("[data-preview]");
   const previewKeys = form.querySelector("[data-preview-keys]");
@@ -233,10 +239,18 @@ export function showForm(app) {
       keys.focus();
       return;
     }
+    if (!category.value) {
+      showError("Choisissez une catégorie dans la liste.");
+      category.focus();
+      return;
+    }
     button.disabled = true;
     buttonLabel.textContent = "Publication…";
     try {
-      const data = Object.fromEntries(new FormData(form));
+      // Les champs cachés vides ne sont pas envoyés : l'API ne doit voir qu'une seule façon d'indiquer la catégorie.
+      const data = Object.fromEntries(
+        [...new FormData(form)].filter(([, value]) => value !== ""),
+      );
       const shortcut = await api("", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

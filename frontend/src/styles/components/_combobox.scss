@@ -1,0 +1,46 @@
+@use "../abstracts/breakpoints" as bp;
+
+// Liste de suggestions sous un champ (src/category-input.js).
+.combobox {
+  position: relative;
+
+  &-options {
+    position: absolute;
+    z-index: 20;
+    // Au moins la largeur du champ, plus si une option est longue (colonne étroite).
+    left: 0;
+    width: max-content;
+    min-width: 100%;
+    max-width: min(360px, calc(100vw - 40px));
+    max-height: 240px;
+    margin: 6px 0 0;
+    padding: 6px;
+    overflow-y: auto;
+    border: 2px solid var(--fg-60);
+    border-radius: 10px;
+    background: var(--surface);
+    box-shadow: 4px 4px 0 var(--fg-12);
+    list-style: none;
+
+    li {
+      padding: 9px 12px;
+      border-radius: 6px;
+      color: var(--fg);
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    // Option active (flèches) ou survolée.
+    li[aria-selected="true"],
+    li:hover {
+      background: var(--fg-12);
+      color: var(--accent-ink);
+    }
+  }
+
+  @include bp.reduced-motion {
+    &-options li {
+      transition: none;
+    }
+  }
+}
