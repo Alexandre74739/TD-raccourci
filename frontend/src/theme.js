@@ -1,5 +1,6 @@
 // Bouton de thème du header : bascule sombre / clair via <html data-theme>,
-// choix mémorisé dans localStorage (relu avant le rendu par le script de index.html).
+// choix mémorisé dans localStorage (relu avant le rendu par public/theme-init.js,
+// qui suit prefers-color-scheme tant que rien n'est enregistré).
 const STORAGE_KEY = "theme";
 const root = document.documentElement;
 const toggle = document.querySelector(".header .theme-toggle");
