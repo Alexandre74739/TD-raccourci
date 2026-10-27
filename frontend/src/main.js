@@ -3,6 +3,7 @@ import DOMPurify from "dompurify";
 import { api, escapeHtml as e } from "./api.js";
 import { showForm } from "./new-shortcut.js";
 import { heroTemplate, setupHero } from "./sections/hero.js";
+import { reflexesTemplate } from "./sections/reflexes.js";
 import "./styles/main.scss";
 
 const app = document.querySelector("#app");
@@ -11,6 +12,7 @@ let navigation = 0;
 function showIndex(shortcuts) {
   app.innerHTML = `
     ${heroTemplate()}
+    ${reflexesTemplate()}
     <div id="sommaire" class="toolbar"><h2>Le sommaire <span class="count">${shortcuts.length}</span></h2>
     <label class="search">Rechercher une fiche<input id="search" type="search" placeholder="Titre, touches, catégorie…" /></label></div>
     <div id="cards" class="cards"></div>`;
