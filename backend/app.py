@@ -142,6 +142,9 @@ def create_shortcut():
                 (slug, metadata["title"], metadata["description"], metadata["keys"],
                  category_id(db, data), content.strip()),
             )
-    except UniqueViolation:
+    except UniqueViolation as error:
+        # Seul le slug de la fiche signale un doublon de titre : les autres conflits restent des erreurs 500.
+        if error.diag.constraint_name != "fiches_slug_key":
+            raise
         return jsonify(error="Une fiche porte déjà ce titre. Choisissez un autre titre."), 409
     return jsonify(db.execute(DETAIL_QUERY, (slug,)).fetchone()), 201
