@@ -19,7 +19,7 @@ class NormalizeKeysTest(unittest.TestCase):
         self.assertEqual(normalize_keys("Ctrl + Plus"), "Ctrl+Plus")
 
     def test_invalid_combinations(self):
-        for value in ("", "Ctrl", "Ctrl + K + S", "Ctrl ++", "Ctrl + Ctrl + A", "Truc + A"):
+        for value in ("", "Ctrl", "Ctrl + K + S", "Ctrl ++", "Ctrl + Ctrl + A", "Truc + A", "Ctrl + ß"):
             with self.subTest(value=value), self.assertRaises(InvalidKeys):
                 normalize_keys(value)
 

@@ -47,7 +47,8 @@ def normalize_keys(value):
     main_keys = []
     for part in parts:
         name = ALIASES.get(part.lower())
-        if name is None and len(part) == 1 and not part.isspace():
+        # « ß ».upper() donne « SS » : seule une majuscule d'un caractère reste une touche.
+        if name is None and len(part) == 1 and len(part.upper()) == 1 and not part.isspace():
             name = part.upper()
         if name is None:
             raise InvalidKeys(f"Touche inconnue : {part}.")
