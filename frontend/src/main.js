@@ -4,6 +4,7 @@ import { api, escapeHtml as e } from "./api.js";
 import { showForm } from "./new-shortcut.js";
 import { heroTemplate, setupHero } from "./sections/hero.js";
 import { reflexesTemplate } from "./sections/reflexes.js";
+import { sommaireTemplate, setupSommaire } from "./sections/sommaire.js";
 import "./styles/main.scss";
 
 const app = document.querySelector("#app");
@@ -13,33 +14,9 @@ function showIndex(shortcuts) {
   app.innerHTML = `
     ${heroTemplate()}
     ${reflexesTemplate()}
-    <div id="sommaire" class="toolbar"><h2>Le sommaire <span class="count">${shortcuts.length}</span></h2>
-    <label class="search">Rechercher une fiche<input id="search" type="search" placeholder="Titre, touches, catégorie…" /></label></div>
-    <div id="cards" class="cards"></div>`;
-  const cards = document.querySelector("#cards");
-  function renderCards(query = "") {
-    const matches = shortcuts.filter((item) =>
-      `${item.title} ${item.description} ${item.keys} ${item.category}`
-        .toLocaleLowerCase("fr")
-        .includes(query),
-    );
-    cards.innerHTML =
-      matches
-        .map(
-          (item) => `
-      <a class="card" href="#/raccourci/${encodeURIComponent(item.slug)}">
-        <span class="category">${e(item.category)}</span><kbd>${e(item.keys)}</kbd>
-        <h3>${e(item.title)}</h3><p>${e(item.description)}</p><span class="read">Lire la fiche ↗</span>
-      </a>`,
-        )
-        .join("") ||
-      '<p class="empty">Aucune fiche trouvée. Ajoutez votre premier raccourci !</p>';
-  }
-  renderCards();
+    ${sommaireTemplate(shortcuts)}`;
   setupHero();
-  document.querySelector("#search").addEventListener("input", (event) => {
-    renderCards(event.target.value.trim().toLocaleLowerCase("fr"));
-  });
+  setupSommaire(shortcuts);
 }
 
 function showShortcut(shortcut) {

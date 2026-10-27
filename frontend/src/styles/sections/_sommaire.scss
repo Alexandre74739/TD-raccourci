@@ -1,0 +1,168 @@
+@use "../abstracts/breakpoints" as bp;
+
+// Sommaire de la page d'accueil (gabarit : src/sections/sommaire.js).
+// En-tête (titre + recherche), puis la grille de cartes (src/styles/components/_card.scss).
+.sommaire {
+  padding-top: 80px;
+  color: var(--papier);
+  font-family: var(--font-mono);
+
+  &-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 32px;
+    align-items: end;
+    margin-bottom: 48px;
+  }
+
+  &-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(32px, 5vw, 56px);
+    font-weight: 400;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+  }
+
+  // Nombre de fiches : le seul aplat Toxine de l'en-tête, penché comme le surlignage du hero.
+  &-count {
+    display: inline-block;
+    padding: 6px 10px 4px;
+    border-radius: 6px;
+    background: var(--toxine);
+    color: var(--abysse);
+    font: 700 0.34em/1 var(--font-mono);
+    letter-spacing: 0;
+    vertical-align: middle;
+    transform: skewX(-8deg);
+  }
+
+  &-lead {
+    max-width: 44ch;
+    margin: 16px 0 0;
+    color: var(--papier-60);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  &-search {
+    flex: none;
+    width: min(100%, 380px);
+
+    &-label {
+      display: block;
+      margin-bottom: 10px;
+      color: var(--papier-60);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    &-field {
+      position: relative;
+      display: block;
+    }
+
+    &-icon {
+      position: absolute;
+      top: 50%;
+      left: 16px;
+      width: 18px;
+      translate: 0 -50%;
+      fill: none;
+      stroke: var(--papier-60);
+      stroke-width: 2;
+      stroke-linecap: round;
+      pointer-events: none;
+    }
+
+    input {
+      margin: 0;
+      padding: 15px 16px 15px 46px;
+      // Papier/60 : le contour du champ garde un contraste d'au moins 3:1 avec le fond.
+      border: 2px solid var(--papier-60);
+      border-radius: 10px;
+      background: var(--charbon);
+      color: var(--papier);
+      color-scheme: dark;
+      font-size: 14px;
+      transition: border-color 0.15s;
+
+      &::placeholder {
+        color: var(--papier-60);
+      }
+
+      &:hover,
+      &:focus {
+        border-color: var(--papier);
+      }
+
+      &:focus {
+        outline: 2px solid var(--toxine);
+        outline-offset: 3px;
+      }
+    }
+  }
+
+  &-empty {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    justify-content: center;
+    grid-column: span 2;
+    padding: 40px 24px;
+    border: 2px dashed var(--papier-30);
+    border-radius: 16px;
+    color: var(--papier);
+    font-size: 15px;
+    text-align: center;
+
+    p {
+      margin: 0;
+    }
+
+    .button {
+      padding: 11px 18px;
+      font-size: 13px;
+    }
+  }
+
+  // Texte réservé aux lecteurs d'écran (nombre de résultats, « Raccourci : » devant les touches).
+  &-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  @include bp.reduced-motion {
+    &-search input {
+      transition: none;
+    }
+  }
+
+  @include bp.below(bp.$md) {
+    &-head {
+      align-items: stretch;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    &-search {
+      width: 100%;
+    }
+
+    &-empty {
+      grid-column: auto;
+    }
+  }
+
+  @include bp.below(bp.$sm) {
+    padding-top: 56px;
+  }
+}
