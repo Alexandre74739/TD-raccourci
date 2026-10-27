@@ -7,4 +7,5 @@ COPY backend/ ./backend/
 COPY content/ ./content/
 
 EXPOSE 5000
-CMD ["flask", "--app", "backend/app", "run", "--host=0.0.0.0", "--port=5000"]
+# Les migrations passent avant chaque démarrage : la base suit le code sans action manuelle.
+CMD ["sh", "-c", "python backend/migrate.py && exec flask --app backend/app run --host=0.0.0.0 --port=5000"]
