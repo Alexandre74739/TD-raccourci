@@ -14,11 +14,24 @@ const LABELS = {
   ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→', Plus: '+',
 };
 
+// Carte du clavier (Chrome et Edge) : position physique → caractère selon la disposition,
+// par exemple KeyW → « z » sur AZERTY. Chargée une fois, car la capture d'une touche est synchrone.
+let keyboardLayout = null;
+
+export async function loadKeyboardLayout() {
+  try {
+    keyboardLayout = (await navigator.keyboard?.getLayoutMap?.()) ?? null;
+  } catch {
+    // Indisponible (Safari, Firefox, iframe…) : on garde la position QWERTY.
+    keyboardLayout = null;
+  }
+}
+
 export function isApple(platform = navigator.userAgentData?.platform || navigator.platform || navigator.userAgent) {
   return /mac|iphone|ipad/i.test(platform);
 }
 
-function mainKey(event) {
+function mainKey(event, layout) {
   if (MODIFIER_KEYS.has(event.key)) return null;
   if (event.key === ' ') return 'Space';
   if (event.key === '+') return 'Plus';
@@ -27,6 +40,9 @@ function mainKey(event) {
   // Avec Alt, Windows et Linux donnent la bonne lettre (Z sur AZERTY) ; seul Option sur Mac la
   // transforme (« π » pour Option + P), et c'est alors seulement qu'on lit la position.
   const altered = event.altKey && !/^[a-z]$/i.test(event.key);
+  // La carte du clavier retrouve la vraie lettre (Z sur un Mac AZERTY), sinon la position QWERTY.
+  const mapped = altered && /^Key[A-Z]$/.test(event.code) ? layout?.get(event.code) : undefined;
+  if (mapped && /^[a-z]$/i.test(mapped)) return mapped.toUpperCase();
   const physical = /^(?:Digit|Numpad)(\d)$/.exec(event.code) ?? (altered ? /^Key([A-Z])$/.exec(event.code) : null);
   if (physical) return physical[1];
   const upper = event.key.toUpperCase();
@@ -37,8 +53,9 @@ function mainKey(event) {
 
 // Combinaison d'un keydown au format normalisé, ou null pour un modificateur seul.
 // `held` ajoute des modificateurs choisis à l'écran plutôt qu'au clavier.
-export function fromKeyboardEvent(event, held = []) {
-  const key = mainKey(event);
+// `layout` remplace la carte du clavier chargée (tests).
+export function fromKeyboardEvent(event, held = [], layout = keyboardLayout) {
+  const key = mainKey(event, layout);
   if (key === null) return null;
   const pressed = new Set(held);
   if (event.ctrlKey) pressed.add('Ctrl');

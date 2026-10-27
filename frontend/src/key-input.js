@@ -1,5 +1,5 @@
 import { escapeHtml as e } from './api.js';
-import { MODIFIERS, formatKeys, fromKeyboardEvent, keyLabel } from './keys.js';
+import { MODIFIERS, formatKeys, fromKeyboardEvent, keyLabel, loadKeyboardLayout } from './keys.js';
 
 // Champ de touches : on fait la combinaison au clavier au lieu de l'écrire.
 // La valeur lisible est affichée, la valeur normalisée part dans un champ caché `name`.
@@ -24,6 +24,7 @@ export function keyField({ id, name, head }) {
 }
 
 export function bindKeyField(field) {
+  loadKeyboardLayout();
   const display = field.querySelector('.key-display');
   const value = field.querySelector('input[type="hidden"]');
   const buttons = [...field.querySelectorAll('[data-modifier]')];
