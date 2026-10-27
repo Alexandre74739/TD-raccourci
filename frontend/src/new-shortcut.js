@@ -171,9 +171,8 @@ export function showForm(app) {
                   )
                   .join("")}
               </div>
-              <textarea id="new-content" name="content" required rows="12" spellcheck="true" placeholder="## À quoi sert ce raccourci ?" aria-describedby="new-content-hint"></textarea>
+              <textarea id="new-content" name="content" required rows="12" spellcheck="true" placeholder="## À quoi sert ce raccourci ?"></textarea>
             </div>
-            <p id="new-content-hint" class="field-hint">Sélectionnez du texte puis un format, ou insérez un modèle. Image : <code>![Description](https://…)</code>, lien : <code>[Texte](https://…)</code>.</p>
           </div>
         </fieldset>
 
