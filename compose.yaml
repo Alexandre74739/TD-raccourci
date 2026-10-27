@@ -1,14 +1,50 @@
 services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: raccourcis
+      POSTGRES_USER: raccourcis
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-raccourcis}
+    volumes:
+      - db-data:/var/lib/postgresql
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      # En TCP : pendant l'initialisation d'un volume vide, le serveur temporaire n'écoute que sur le socket local.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U raccourcis -d raccourcis"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  adminer:
+    image: adminer:5
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      - db
+
   api:
     image: ghcr.io/alexandre74739/shortcuts-back
-    volumes:
-      - ./content:/app/content
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://raccourcis:${POSTGRES_PASSWORD:-raccourcis}@db:5432/raccourcis
+    depends_on:
+      db:
+        condition: service_healthy
 
   frontend:
     image: ghcr.io/alexandre74739/shortcuts-front
+    build: ./frontend
     environment:
       API_PROXY_TARGET: http://api:5000
     ports:
       - "127.0.0.1:5173:5173"
     depends_on:
       - api
+
+volumes:
+  db-data:
