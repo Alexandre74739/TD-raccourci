@@ -10,7 +10,7 @@ let navigation = 0;
 
 function showIndex(shortcuts) {
   app.innerHTML = `
-    ${heroTemplate(shortcuts)}
+    ${heroTemplate()}
     <div id="sommaire" class="toolbar"><h2>Le sommaire <span class="count">${shortcuts.length}</span></h2>
     <label class="search">Rechercher une fiche<input id="search" type="search" placeholder="Titre, touches, catégorie…" /></label></div>
     <div id="cards" class="cards"></div>`;

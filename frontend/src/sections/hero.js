@@ -13,11 +13,7 @@ const ICONS = ["key", "cursor", "bolt"]
   )
   .join("");
 
-export function heroTemplate(shortcuts) {
-  const browse =
-    shortcuts.length > 1
-      ? `Voir les ${shortcuts.length} fiches`
-      : "Voir le sommaire";
+export function heroTemplate() {
   return `
     <section class="hero" aria-labelledby="hero-title">
       ${ICONS}
@@ -26,7 +22,7 @@ export function heroTemplate(shortcuts) {
         <p class="hero-lead">Les raccourcis clavier qu’on utilise vraiment en cours. Une fiche chacun, à lire en une minute.</p>
         <div class="hero-actions">
           <a class="button button--primary" href="#/nouveau"><span class="cta-icon" aria-hidden="true"><span class="cta-plus">+</span></span> Ajouter un raccourci</a>
-          <button class="button button--secondary" type="button" data-hero-browse>${browse}</button>
+          <button class="button button--secondary" type="button" data-hero-browse>Voir les fiches</button>
         </div>
       </div>
     </section>`;
