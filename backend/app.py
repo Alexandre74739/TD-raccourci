@@ -6,6 +6,7 @@ import psycopg
 from flask import Flask, jsonify, request
 from psycopg.errors import UniqueViolation
 from werkzeug.exceptions import HTTPException
+from speedtest import InvalidSpeedtest, compute_stats, parse_count
 
 from db import close_db, get_db
 from keys import InvalidKeys, normalize_keys
