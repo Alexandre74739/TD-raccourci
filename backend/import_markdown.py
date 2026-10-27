@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 import frontmatter
+import psycopg
 from yaml import YAMLError
 
 from app import SLUG_LIMIT, InvalidShortcut, category_id, validate_metadata
@@ -46,7 +47,8 @@ def main():
                 continue
             try:
                 added = import_file(db, path)
-            except (InvalidShortcut, UnicodeError, YAMLError, ValueError, TypeError) as error:
+            # Une fiche refusée par la base est annulée seule : l'import continue.
+            except (InvalidShortcut, UnicodeError, YAMLError, ValueError, TypeError, psycopg.Error) as error:
                 print(f"✗ {path.name} : {error}")
                 errors += 1
                 continue
