@@ -1,55 +1,66 @@
-"""API du carnet : les fichiers Markdown sont la seule source de données."""
+"""API du carnet : PostgreSQL est la seule source de données."""
 import re
 import unicodedata
-from pathlib import Path
 
-import frontmatter
 from flask import Flask, jsonify, request
+from psycopg.errors import UniqueViolation
 from werkzeug.exceptions import HTTPException
-from yaml import YAMLError
+
+from db import close_db, get_db
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 256 * 1024
-CONTENT_DIR = Path(__file__).resolve().parent.parent / "content"
-SLUG_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
-LIMITS = {"title": 120, "description": 300, "keys": 120, "category": 60}
+app.teardown_appcontext(close_db)
+LIMITS = {"title": 120, "description": 300, "keys": 120}
+CATEGORY_LIMIT = 60
+SLUG_LIMIT = 140
+LIST_QUERY = """
+    SELECT f.slug, f.title, f.description, f.keys, c.label AS category, c.slug AS category_slug
+    FROM fiches f JOIN categories c ON c.id = f.category_id
+"""
+DETAIL_QUERY = """
+    SELECT f.slug, f.title, f.description, f.keys, c.label AS category, c.slug AS category_slug,
+           f.content
+    FROM fiches f JOIN categories c ON c.id = f.category_id
+    WHERE f.slug = %s
+"""
 
 
 class InvalidShortcut(ValueError):
-    """Une fiche externe ne respecte pas le contrat attendu."""
+    """Une fiche reçue ne respecte pas le contrat attendu."""
+
+
+def clean_text(data, field, maximum):
+    value = data.get(field)
+    if not isinstance(value, str) or not value.strip():
+        raise InvalidShortcut(f"Le champ {field} est obligatoire et doit être un texte.")
+    if len(value.strip()) > maximum:
+        raise InvalidShortcut(f"Le champ {field} dépasse {maximum} caractères.")
+    return value.strip()
 
 
 def validate_metadata(data):
     if not isinstance(data, dict):
         raise InvalidShortcut("Les métadonnées doivent être un objet.")
-    result = {}
-    for field, maximum in LIMITS.items():
-        value = data.get(field)
-        if not isinstance(value, str) or not value.strip():
-            raise InvalidShortcut(f"Le champ {field} est obligatoire et doit être un texte.")
-        if len(value.strip()) > maximum:
-            raise InvalidShortcut(f"Le champ {field} dépasse {maximum} caractères.")
-        result[field] = value.strip()
-    return result
+    return {field: clean_text(data, field, maximum) for field, maximum in LIMITS.items()}
 
 
-def shortcut_path(slug):
-    if not SLUG_PATTERN.fullmatch(slug):
-        return None
-    path = CONTENT_DIR / f"{slug}.md"
-    # Ne pas suivre un lien symbolique placé dans le dossier partagé.
-    if path.is_symlink():
-        return None
-    return path
+def slugify(text):
+    text_ascii = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
+    return re.sub(r"[^a-z0-9]+", "-", text_ascii.lower()).strip("-")
 
 
-def read_shortcut(path):
-    try:
-        post = frontmatter.loads(path.read_text(encoding="utf-8"))
-        metadata = validate_metadata(post.metadata)
-    except (UnicodeError, YAMLError, ValueError, TypeError) as error:
-        raise InvalidShortcut(f"Fiche {path.name} : {error}") from error
-    return {"slug": path.stem, **metadata, "content": post.content}
+def category_id(db, label):
+    """Retrouve la catégorie au même slug (« VS Code » = « vs code »), sinon la crée."""
+    slug = slugify(label)[:CATEGORY_LIMIT].strip("-")
+    if not slug:
+        raise InvalidShortcut("La catégorie doit contenir au moins une lettre latine ou un chiffre.")
+    row = db.execute(
+        """INSERT INTO categories (slug, label) VALUES (%s, %s)
+           ON CONFLICT (slug) DO UPDATE SET slug = EXCLUDED.slug RETURNING id""",
+        (slug, label),
+    ).fetchone()
+    return row["id"]
 
 
 @app.errorhandler(InvalidShortcut)
@@ -62,51 +73,42 @@ def http_error(error):
     return jsonify(error=error.description), error.code
 
 
-@app.errorhandler(OSError)
-def storage_error(error):
-    app.logger.error("Erreur de stockage : %s", type(error).__name__)
-    return jsonify(error="Impossible de lire ou écrire les fichiers Markdown."), 500
-
-
 @app.get("/api/shortcuts")
 def list_shortcuts():
-    shortcuts = []
-    for path in sorted(CONTENT_DIR.glob("*.md")):
-        if shortcut_path(path.stem) is None:
-            raise InvalidShortcut(f"Nom de fichier non autorisé : {path.name}")
-        shortcut = read_shortcut(path)
-        shortcuts.append({key: value for key, value in shortcut.items() if key != "content"})
+    shortcuts = get_db().execute(LIST_QUERY).fetchall()
     shortcuts.sort(key=lambda shortcut: shortcut["title"].casefold())
     return jsonify(shortcuts)
 
 
 @app.get("/api/shortcuts/<slug>")
 def get_shortcut(slug):
-    path = shortcut_path(slug)
-    if path is None or not path.is_file():
+    shortcut = get_db().execute(DETAIL_QUERY, (slug,)).fetchone()
+    if shortcut is None:
         return jsonify(error="Raccourci introuvable."), 404
-    return jsonify(read_shortcut(path))
+    return jsonify(shortcut)
 
 
 @app.post("/api/shortcuts")
 def create_shortcut():
     data = request.get_json()
     metadata = validate_metadata(data)
+    label = clean_text(data, "category", CATEGORY_LIMIT)
     content = data.get("content")
     if not isinstance(content, str) or not content.strip():
         raise InvalidShortcut("Le contenu Markdown est obligatoire.")
-    title_ascii = unicodedata.normalize("NFKD", metadata["title"]).encode("ascii", "ignore").decode()
-    slug = re.sub(r"[^a-z0-9]+", "-", title_ascii.lower()).strip("-")
+    slug = slugify(metadata["title"])[:SLUG_LIMIT].strip("-")
     if not slug:
         raise InvalidShortcut("Le titre doit contenir au moins une lettre latine ou un chiffre.")
-    path = shortcut_path(slug)
-    if path is None:
-        return jsonify(error="Ce nom de fichier est indisponible."), 409
-    post = frontmatter.Post(content.strip(), **metadata)
-    # Le mode x empêche d'écraser une fiche, y compris en cas de créations simultanées.
+    db = get_db()
+    # La catégorie créée est annulée avec la fiche si celle-ci est refusée.
     try:
-        with path.open("x", encoding="utf-8") as handle:
-            handle.write(frontmatter.dumps(post) + "\n")
-    except FileExistsError:
+        with db.transaction():
+            db.execute(
+                """INSERT INTO fiches (slug, title, description, keys, category_id, content)
+                   VALUES (%s, %s, %s, %s, %s, %s)""",
+                (slug, metadata["title"], metadata["description"], metadata["keys"],
+                 category_id(db, label), content.strip()),
+            )
+    except UniqueViolation:
         return jsonify(error="Une fiche porte déjà ce titre. Choisissez un autre titre."), 409
-    return jsonify({"slug": slug, **metadata, "content": content.strip()}), 201
+    return jsonify(db.execute(DETAIL_QUERY, (slug,)).fetchone()), 201
