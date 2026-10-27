@@ -36,6 +36,15 @@
       background: var(--fg-12);
       color: var(--accent-ink);
     }
+
+    // « Nouvelle catégorie "…" » : se distingue des catégories existantes.
+    li.created {
+      font-style: italic;
+
+      &:not([aria-selected="true"], :hover) {
+        color: var(--fg-60);
+      }
+    }
   }
 
   @include bp.reduced-motion {

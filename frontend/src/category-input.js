@@ -1,7 +1,7 @@
 import { escapeHtml as e } from './api.js';
 
 // Liste déroulante accessible (pattern ARIA « combobox ») : la catégorie doit être choisie
-// dans la liste, son slug part dans le champ caché category_slug.
+// dans la liste. Une catégorie existante part dans category_slug, une nouvelle dans new_category.
 // `head` est l'en-tête du champ (libellé relié à `id`), fourni par la page.
 export function categoryField({ id, head }) {
   return `
@@ -13,6 +13,7 @@ export function categoryField({ id, head }) {
         <ul id="${e(id)}-options" class="combobox-options" role="listbox" aria-label="Catégories" hidden></ul>
       </div>
       <input type="hidden" name="category_slug" />
+      <input type="hidden" name="new_category" />
     </div>`;
 }
 
@@ -23,6 +24,7 @@ export function bindCategoryField(field) {
   const input = field.querySelector('[role="combobox"]');
   const listbox = field.querySelector('[role="listbox"]');
   const slug = field.querySelector('input[name="category_slug"]');
+  const newCategory = field.querySelector('input[name="new_category"]');
   let categories = [];
   let options = [];
   let active = -1;
@@ -35,7 +37,7 @@ export function bindCategoryField(field) {
   };
   const render = () => {
     listbox.innerHTML = options.map((option, index) => `
-      <li id="${input.id}-option-${index}" role="option" aria-selected="${index === active}">${e(option.label)}</li>`).join('');
+      <li id="${input.id}-option-${index}" role="option" aria-selected="${index === active}"${option.created ? ' class="created"' : ''}>${e(option.label)}</li>`).join('');
     listbox.hidden = options.length === 0;
     input.setAttribute('aria-expanded', String(!listbox.hidden));
     if (active >= 0) input.setAttribute('aria-activedescendant', `${input.id}-option-${active}`);
@@ -45,6 +47,10 @@ export function bindCategoryField(field) {
   const open = () => {
     const query = simplify(input.value);
     options = categories.filter((category) => simplify(category.label).includes(query));
+    const text = input.value.trim();
+    if (text && !categories.some((category) => simplify(category.label) === query)) {
+      options.push({ label: `Nouvelle catégorie "${text}"`, created: text });
+    }
     active = options.length ? 0 : -1;
     render();
   };
@@ -57,8 +63,9 @@ export function bindCategoryField(field) {
     notifying = false;
   };
   const select = (option) => {
-    input.value = option.label;
-    slug.value = option.slug;
+    input.value = option.created ?? option.label;
+    slug.value = option.slug ?? '';
+    newCategory.value = option.created ?? '';
     close();
     notify();
   };
@@ -67,6 +74,7 @@ export function bindCategoryField(field) {
     if (notifying) return;
     // Un texte modifié n'est plus la catégorie choisie : il faut en resélectionner une.
     slug.value = '';
+    newCategory.value = '';
     open();
   });
   input.addEventListener('focus', open);
@@ -96,7 +104,7 @@ export function bindCategoryField(field) {
   });
 
   return {
-    get value() { return slug.value; },
+    get value() { return slug.value || newCategory.value; },
     focus: () => input.focus(),
     setCategories(list) {
       categories = list;
