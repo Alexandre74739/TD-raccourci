@@ -3,36 +3,16 @@
 
 import { escapeHtml as e } from "../api.js";
 import { setupCtaSpin } from "../header.js";
+import { keyLabel } from "../keys.js";
 
-// L'API normalise les touches au format « Ctrl+Shift+P » (noms de KeyboardEvent.key, voir
-// backend/keys.py) : on les traduit pour la lecture.
-const KEY_LABELS = {
-  Shift: "Maj",
-  Meta: "Cmd / Win",
-  Enter: "Entrée",
-  Escape: "Échap",
-  Space: "Espace",
-  Backspace: "⌫ Retour",
-  Delete: "Suppr",
-  Insert: "Inser",
-  Home: "Début",
-  End: "Fin",
-  PageUp: "Page ↑",
-  PageDown: "Page ↓",
-  ArrowUp: "↑",
-  ArrowDown: "↓",
-  ArrowLeft: "←",
-  ArrowRight: "→",
-  Plus: "+",
-};
-
-// Accepte aussi la saisie libre du formulaire (« Ctrl + Maj + P ») pour l'aperçu de la carte.
+// L'API normalise les touches au format « Ctrl+Shift+P » : keys.js les traduit pour la lecture,
+// selon le système (Cmd sur Mac, Win ailleurs).
 function keyLabels(keys) {
   return keys
     .split("+")
     .map((key) => key.trim())
     .filter(Boolean)
-    .map((key) => KEY_LABELS[key] ?? key);
+    .map((key) => keyLabel(key));
 }
 
 // Une touche par élément, séparées par un « + » : <kbd>Ctrl</kbd>+<kbd>Maj</kbd>+<kbd>P</kbd>.
