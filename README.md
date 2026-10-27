@@ -65,6 +65,10 @@ frontend/
   src/
     main.js              # Navigation, sommaire et affichage d’une fiche
     new-shortcut.js       # Formulaire
+    key-input.js         # Champ de touches : capture clavier et modificateurs à l’écran
+    category-input.js    # Champ de catégorie : autocomplétion
+    keys.js              # Format des touches : capture et affichage en français
+    keys.test.js         # Tests du format des touches (npm test)
     api.js               # Appels HTTP et échappement du texte
     style.css            # Styles adaptatifs
 ```
@@ -102,7 +106,7 @@ Les touches sont enregistrées dans un format normalisé, pour pouvoir les compa
 - modificateurs dans l’ordre `Ctrl`, `Alt`, `Shift`, `Meta` (`Cmd` sur macOS, touche Windows sur PC) ;
 - une seule touche principale, nommée comme `KeyboardEvent.key` : `Enter`, `Escape`, `ArrowUp`, `F5`… La touche `+` s’écrit `Plus`.
 
-L’API accepte aussi les noms français et les espaces, puis convertit : `Ctrl + Maj + P` devient `Ctrl+Shift+P`. Une combinaison incompréhensible est refusée avec une erreur `422`. Tests : `python -m unittest discover backend`.
+L’API accepte aussi les noms français et les espaces, puis convertit : `Ctrl + Maj + P` devient `Ctrl+Shift+P`. Une combinaison incompréhensible est refusée avec une erreur `422`. Le frontend affiche les touches en français selon le système : `Shift+Meta+P` devient `Maj + Cmd + P` sur Mac et `Maj + Win + P` ailleurs. Tests : `python -m unittest discover backend` pour l’API, `npm test` dans `frontend/` pour le frontend.
 
 ## Écrire une fiche à la main
 
@@ -135,6 +139,9 @@ Le script affiche une ligne par fichier : `✓` importé, `=` déjà présent (m
 ## Créer une fiche depuis le site
 
 Le formulaire sépare les métadonnées du corps Markdown. Flask génère un identifiant à partir du titre et enregistre la fiche en base.
+
+- **Touches** : cliquez dans le champ, puis faites la combinaison au clavier. Elle s’affiche en français et part au format normalisé. `Tab` passe au champ suivant, « Effacer » vide le champ. Pour une combinaison interceptée par le système ou le navigateur (`Cmd + Q`, `Cmd + Tab`, `Alt + F4`…), activez ses modificateurs avec les boutons sous le champ, puis appuyez seulement sur la dernière touche.
+- **Catégorie** : tapez quelques lettres, puis choisissez une catégorie dans la liste (flèches, `Entrée`, `Échap` ou clic), sans tenir compte des majuscules ni des accents. Si elle n’existe pas, choisissez `Nouvelle catégorie "…"` : elle sera créée avec la fiche. Un texte saisi sans choix dans la liste ne suffit pas.
 
 Par exemple, « Sélectionner tout » donne l’identifiant `selectionner-tout`. S’il existe déjà, l’API répond `409` et demande un autre titre. Elle ne modifie ni ne supprime de fiche existante. Les requêtes sont limitées à 256 Kio.
 
