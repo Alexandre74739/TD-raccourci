@@ -24,6 +24,20 @@ test('position physique pour les chiffres et avec Alt', () => {
   assert.equal(fromKeyboardEvent(keydown('π', 'KeyP', { altKey: true })), 'Alt+P');
 });
 
+test('AZERTY : la lettre tapée, pas sa position QWERTY', () => {
+  // Sous Windows et Linux, Alt ne change pas la lettre : event.key suffit.
+  assert.equal(fromKeyboardEvent(keydown('z', 'KeyW', { altKey: true })), 'Alt+Z');
+  assert.equal(fromKeyboardEvent(keydown('a', 'KeyQ', { altKey: true })), 'Alt+A');
+  assert.equal(fromKeyboardEvent(keydown('z', 'KeyW', { ctrlKey: true })), 'Ctrl+Z');
+  // Sur Mac, Option change la lettre : la carte du clavier retrouve la vraie.
+  const azerty = new Map([['KeyW', 'z'], ['KeyQ', 'a']]);
+  assert.equal(fromKeyboardEvent(keydown('Â', 'KeyW', { altKey: true }), [], azerty), 'Alt+Z');
+});
+
+test('sans carte du clavier, Option + lettre suit la position QWERTY', () => {
+  assert.equal(fromKeyboardEvent(keydown('π', 'KeyP', { altKey: true }), [], null), 'Alt+P');
+});
+
 test('touche à plusieurs majuscules refusée', () => {
   assert.equal(fromKeyboardEvent(keydown('ß', 'Minus', { ctrlKey: true })), null);
 });
