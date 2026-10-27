@@ -23,8 +23,6 @@ services:
       dockerfile: backend/Dockerfile
     environment:
       DATABASE_URL: postgresql://raccourcis:${POSTGRES_PASSWORD:-raccourcis}@db:5432/raccourcis
-    volumes:
-      - ./content:/app/content
     depends_on:
       db:
         condition: service_healthy
