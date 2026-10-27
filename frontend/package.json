@@ -13,7 +13,8 @@
   },
   "dependencies": {
     "dompurify": "3.4.17",
-    "marked": "18.1.1"
+    "marked": "18.1.1",
+    "motion": "12.43.0"
   },
   "devDependencies": {
     "sass": "1.105.1",
