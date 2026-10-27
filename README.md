@@ -1,14 +1,20 @@
 # Le carnet des raccourcis
 
-Template pédagogique : un site Vite en JavaScript et une API Flask. Les élèves documentent leurs raccourcis clavier dans des fichiers Markdown versionnés avec Git.
+Template pédagogique : un site Vite en JavaScript et une API Flask. Les élèves documentent leurs raccourcis clavier, enregistrés dans une base **PostgreSQL**.
 
 ## Démarrer
 
-Prérequis : Node.js **22.12+** (ou 24/26 LTS), npm et Python **3.10+**.
+Prérequis : Node.js **22.12+** (ou 24/26 LTS), npm, Python **3.10+** et Docker (pour PostgreSQL).
 
 ```bash
 git clone <URL-DU-DEPOT>
 cd raccourcis-template
+```
+
+Démarrez PostgreSQL, à la racine du dépôt. Au premier lancement, les tables sont créées par `backend/schema.sql` :
+
+```bash
+docker compose up -d db
 ```
 
 Dans un premier terminal, à la racine du dépôt :
@@ -17,6 +23,8 @@ Dans un premier terminal, à la racine du dépôt :
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r backend/requirements.txt
+export DATABASE_URL=postgresql://raccourcis:raccourcis@127.0.0.1:5432/raccourcis
+python backend/import_markdown.py   # une seule fois : importe les fiches d’exemple
 flask --app backend/app run --host 0.0.0.0 --port 5000 --debug
 ```
 
@@ -33,17 +41,22 @@ Ouvrez **http://localhost:5173**. Vite transmet les requêtes `/api` à Flask : 
 ## Les trois pages
 
 - `#/` : sommaire et recherche par titre, description, touches ou catégorie.
-- `#/nouveau` : formulaire de création. L’API écrit le fichier Markdown, puis la fiche s’ouvre.
+- `#/nouveau` : formulaire de création. L’API enregistre la fiche en base, puis la fiche s’ouvre.
 - `#/raccourci/<slug>` : métadonnées et contenu Markdown rendu avec **Marked**, puis nettoyé avec **DOMPurify**.
 
 ## Organisation
 
 ```text
 backend/
-  app.py                 # Routes API, validation, lecture et création des fichiers
+  app.py                 # Routes API et validation
+  db.py                  # Connexion à PostgreSQL (DATABASE_URL)
+  keys.py                # Format normalisé des touches
+  schema.sql             # Tables, créées au premier démarrage de PostgreSQL
+  import_markdown.py     # Import des fiches content/*.md en base
+  test_keys.py           # Tests du format des touches
   requirements.txt       # Dépendances Python
 content/
-  *.md                   # Fiches des élèves : source de données et dossier à persister
+  *.md                   # Fiches d’exemple, à importer avec import_markdown.py
 frontend/
   index.html             # Structure commune
   vite.config.js         # Proxy vers Flask
@@ -54,11 +67,26 @@ frontend/
     style.css            # Styles adaptatifs
 ```
 
-Il n’y a pas de base de données. Chaque requête relit les fichiers : une modification manuelle est visible au prochain chargement de la page.
+PostgreSQL est la seule source de données : l’API ne lit plus les fichiers de `content/`. Deux tables :
+
+- `categories` : `slug` (identifiant dans l’URL, ex. `vs-code`) et `label` (texte affiché, ex. `VS Code`) ;
+- `fiches` : titre, description, touches, catégorie et contenu Markdown. Les colonnes `keys_macos`, `keys_linux` et `keys_windows` sont prévues pour les alternatives par système.
+
+Pour repartir d’une base vide : `docker compose down -v`, qui supprime aussi le volume des données.
+
+## Format des touches
+
+Les touches sont enregistrées dans un format normalisé, pour pouvoir les comparer à ce que tape l’utilisateur : `Ctrl+Shift+P`.
+
+- touches séparées par `+`, sans espaces ;
+- modificateurs dans l’ordre `Ctrl`, `Alt`, `Shift`, `Meta` (`Cmd` sur macOS, touche Windows sur PC) ;
+- une seule touche principale, nommée comme `KeyboardEvent.key` : `Enter`, `Escape`, `ArrowUp`, `F5`… La touche `+` s’écrit `Plus`.
+
+L’API accepte aussi les noms français et les espaces, puis convertit : `Ctrl + Maj + P` devient `Ctrl+Shift+P`. Une combinaison incompréhensible est refusée avec une erreur `422`. Tests : `python -m unittest discover backend`.
 
 ## Écrire une fiche à la main
 
-Créez `content/mon-raccourci.md`. Le nom du fichier devient son identifiant dans l’URL : lettres minuscules ASCII, chiffres et tirets uniquement, sans espace ni accent.
+Créez `content/mon-raccourci.md`, puis importez-le avec `python backend/import_markdown.py`. Le nom du fichier devient son identifiant dans l’URL : lettres minuscules ASCII, chiffres et tirets uniquement, sans espace ni accent.
 
 ```markdown
 ---
@@ -78,17 +106,17 @@ Appuyez sur **Ctrl + S** sous Windows/Linux, ou **Cmd + S** sous macOS.
 [Lire la documentation](https://exemple.org/documentation)
 ```
 
-Les quatre métadonnées sont obligatoires, sous forme de textes non vides. Limites : `title` 120 caractères, `description` 300, `keys` 120, `category` 60. Mettez les valeurs entre guillemets pour éviter les ambiguïtés YAML, notamment avec `:`. Le corps après le second `---` contient du Markdown : listes, titres, liens, images, tableaux et blocs de code.
+Les quatre métadonnées sont obligatoires, sous forme de textes non vides. Limites : `title` 120 caractères, `description` 300, `keys` 120, `category` 60. Les touches suivent le [format des touches](#format-des-touches) ; la catégorie est créée si elle n’existe pas encore. Mettez les valeurs entre guillemets pour éviter les ambiguïtés YAML, notamment avec `:`. Le corps après le second `---` contient du Markdown : listes, titres, liens, images, tableaux et blocs de code.
 
 Remplacez les URL d’exemple par des URL réelles. Pour une image, utilisez une URL HTTPS pointant directement vers l’image ; son hébergeur doit autoriser son affichage externe. Le navigateur charge l’image : l’API ne la télécharge pas.
 
-Une fiche invalide produit un message indiquant le fichier à corriger ; elle n’est pas ignorée silencieusement.
+Le script affiche une ligne par fichier : `✓` importé, `=` déjà présent (même identifiant), `✗` invalide avec le message à corriger. Il peut être relancé sans créer de doublon : une fiche déjà en base n’est pas modifiée.
 
 ## Créer une fiche depuis le site
 
-Le formulaire sépare les métadonnées du corps Markdown. Flask fabrique l’en-tête YAML, génère un nom à partir du titre et crée le fichier dans `content/`.
+Le formulaire sépare les métadonnées du corps Markdown. Flask génère un identifiant à partir du titre et enregistre la fiche en base.
 
-Par exemple, « Sélectionner tout » crée `content/selectionner-tout.md`. Si le nom existe, l’API répond `409` et demande un autre titre. Elle ne modifie ni ne supprime de fichier existant. Les requêtes sont limitées à 256 Kio.
+Par exemple, « Sélectionner tout » donne l’identifiant `selectionner-tout`. S’il existe déjà, l’API répond `409` et demande un autre titre. Elle ne modifie ni ne supprime de fiche existante. Les requêtes sont limitées à 256 Kio.
 
 ## Contrat API
 
@@ -97,6 +125,9 @@ Par exemple, « Sélectionner tout » crée `content/selectionner-tout.md`. Si l
 | GET | `/api/shortcuts` | Liste des métadonnées et des identifiants `slug` |
 | GET | `/api/shortcuts/<slug>` | Métadonnées, `slug` et corps `content` |
 | POST | `/api/shortcuts` | Crée une fiche ; répond `201` avec la fiche complète |
+| GET | `/api/categories` | Liste des catégories : `slug` et `label` |
+
+Chaque fiche renvoie sa catégorie sous deux formes : `category` (texte affiché) et `category_slug` (identifiant).
 
 Corps JSON d’une création :
 
@@ -105,10 +136,18 @@ Corps JSON d’une création :
   "title": "Sélectionner tout",
   "description": "Sélectionner le contenu du document actif.",
   "keys": "Ctrl + A",
-  "category": "Éditeur",
+  "category_slug": "editeur",
   "content": "## Utilisation\n\nSur macOS, utilisez **Cmd + A**."
 }
 ```
+
+La catégorie s’indique d’une de ces façons :
+
+- `category_slug` : une catégorie existante, sinon erreur `422` ;
+- `new_category` : le texte d’une nouvelle catégorie. Si une catégorie au même identifiant existe déjà (« vs code » et « VS Code »), elle est réutilisée ;
+- `category` : même comportement que `new_category`, accepté pour le formulaire actuel.
+
+Les touches sont renvoyées au [format normalisé](#format-des-touches) : `"Ctrl + A"` est enregistré `"Ctrl+A"`.
 
 Les erreurs retournent `{ "error": "message" }` : notamment `400` pour un JSON incorrect, `404` pour une fiche absente, `409` pour un doublon, `413` pour un corps trop volumineux, `415` pour un contenu non JSON et `422` pour des champs invalides.
 
@@ -118,7 +157,7 @@ Chaque élève peut créer sa branche, ajouter une fiche, puis proposer son trav
 
 ```bash
 git switch -c fiche/selectionner-tout
-# Créer la fiche depuis le site ou dans un éditeur.
+# Écrire content/selectionner-tout.md dans un éditeur.
 git status
 git add content/selectionner-tout.md
 git commit -m "Ajoute le raccourci sélectionner tout"
@@ -127,15 +166,15 @@ git push -u origin fiche/selectionner-tout
 
 Ouvrez ensuite une merge request ou une pull request sur la plateforme choisie. En équipe, deux fiches distinctes donnent des changements indépendants ; modifier la même fiche permet de travailler la résolution de conflits.
 
-Les fiches créées par l’API sont des fichiers locaux : leur création ne lance aucun commit et ne les envoie pas sur le dépôt distant.
+Les fiches créées depuis le site sont enregistrées dans la base locale : elles ne créent aucun fichier, aucun commit, et ne sont pas envoyées sur le dépôt distant.
 
 ## Démarrer avec Docker
 
 Prérequis : Docker avec Docker Compose. Depuis la racine du dépôt :
 
 ```bash
-docker compose pull
-docker compose up -d
+docker compose up -d --build
+docker compose exec api python backend/import_markdown.py   # une seule fois : fiches d’exemple
 ```
 
 Ouvrez **http://localhost:5173**. Pour arrêter les services et supprimer les conteneurs :
@@ -144,14 +183,17 @@ Ouvrez **http://localhost:5173**. Pour arrêter les services et supprimer les co
 docker compose down
 ```
 
+`docker compose down -v` supprime aussi le volume de la base : toutes les fiches sont alors effacées.
+
 La configuration fournie est destinée au développement local :
 
 - **frontend** : Node et Vite sur le port 5173, accessible uniquement depuis la machine hôte. Les dépendances sont installées avec `npm ci` à partir du fichier de verrouillage.
-- **api** : Python et Flask sur le port interne 5000. Le frontend transmet `/api` à `http://api:5000` grâce à `API_PROXY_TARGET`. Dans un conteneur, `localhost` désigne ce conteneur lui-même.
-- **Persistance** : `./content` est monté dans `/app/content` en lecture-écriture côté API. Les fiches créées restent présentes après suppression des conteneurs et sont visibles à Git sur l’hôte. Ce dossier doit rester accessible en écriture dans le conteneur.
-- **Images** : Compose utilise `ghcr.io/alexandre74739/shortcuts-back:latest` et `ghcr.io/alexandre74739/shortcuts-front:latest` publiées sur GitHub Container Registry. Pour une construction locale, le Dockerfile backend utilise la racine du dépôt comme contexte et celui du frontend utilise `frontend/`. Le backend conserve `/app/backend` et `/app/content` côte à côte.
+- **api** : Python et Flask sur le port interne 5000. Le frontend transmet `/api` à `http://api:5000` grâce à `API_PROXY_TARGET`. Dans un conteneur, `localhost` désigne ce conteneur lui-même. L’API démarre une fois la base prête et s’y connecte grâce à `DATABASE_URL`.
+- **db** : PostgreSQL 18, accessible depuis la machine hôte sur `127.0.0.1:5432` (utilisateur, mot de passe et base : `raccourcis`). Le mot de passe se change avec la variable `POSTGRES_PASSWORD`, par exemple dans un fichier `.env` à la racine (ignoré par Git).
+- **Persistance** : les données sont dans le volume nommé `db-data`. Les fiches créées restent présentes après `docker compose down`.
+- **Images** : `docker compose up --build` construit les images localement. Le Dockerfile backend utilise la racine du dépôt comme contexte et celui du frontend utilise `frontend/`. Le backend conserve `/app/backend` et `/app/content` côte à côte, pour le script d’import. Les images publiées sur GitHub Container Registry (`ghcr.io/alexandre74739/shortcuts-back:latest` et `ghcr.io/alexandre74739/shortcuts-front:latest`) s’utilisent avec `docker compose pull` puis `docker compose up -d`.
 
-Les sources sont copiées dans les images : après publication d’une nouvelle version, relancez `docker compose pull` puis `docker compose up -d`. Les modifications des fiches Markdown sont visibles au prochain chargement, sans reconstruire les images.
+Les sources sont copiées dans les images : après une modification du code, relancez `docker compose up -d --build`.
 
 ### Publier les images sur GitHub Container Registry
 
@@ -180,5 +222,6 @@ Les élèves pourront alors cloner cette URL. Ne publiez pas de secrets ni de do
 
 - [Vite](https://vite.dev/guide/) pour le développement du frontend.
 - [Flask](https://flask.palletsprojects.com/) pour l’API.
-- [python-frontmatter](https://pypi.org/project/python-frontmatter/) pour lire et écrire les métadonnées YAML.
+- [PostgreSQL](https://www.postgresql.org/docs/) pour la base de données et [psycopg](https://www.psycopg.org/psycopg3/docs/) pour s’y connecter depuis Python.
+- [python-frontmatter](https://pypi.org/project/python-frontmatter/) pour lire les métadonnées YAML des fiches à importer.
 - [Marked](https://marked.js.org/) pour convertir le Markdown en HTML et [DOMPurify](https://github.com/cure53/DOMPurify) pour nettoyer le HTML avant affichage.
