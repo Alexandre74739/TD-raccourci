@@ -91,7 +91,7 @@ Règles pour travailler à plusieurs :
 
 - **ne modifiez jamais une migration déjà fusionnée** : elle a déjà été appliquée chez les autres et ne repasserait pas. Ajoutez une nouvelle migration ;
 - nom au format `001_description.sql` : trois chiffres, puis minuscules, chiffres et `_` ;
-- si deux branches ajoutent chacune une migration avec le même numéro, l’API refuse de démarrer : renumérotez celle de la branche fusionnée en second ;
+- si deux branches ajoutent chacune une migration avec le même numéro, l’API refuse de démarrer : renumérotez celle de la branche fusionnée en second, sans changer sa description. Une migration est reconnue par sa description (`add_fiche_author`), pas par son numéro : renumérotée, elle n’est pas réappliquée là où elle est déjà passée ;
 - une migration qui échoue est annulée en entier, et les suivantes ne sont pas appliquées.
 
 ## Format des touches
