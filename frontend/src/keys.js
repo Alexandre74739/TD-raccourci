@@ -23,9 +23,11 @@ function mainKey(event) {
   if (event.key === ' ') return 'Space';
   if (event.key === '+') return 'Plus';
   if (NAMED_KEYS.has(event.key)) return event.key;
-  // Les chiffres (« & » sur AZERTY) et les lettres avec Alt (« π » pour Option + P) changent
-  // de caractère : on se fie alors à la position physique de la touche.
-  const physical = /^(?:Digit|Numpad)(\d)$/.exec(event.code) ?? (event.altKey ? /^Key([A-Z])$/.exec(event.code) : null);
+  // Les chiffres (« & » sur AZERTY) changent de caractère : on se fie à la position physique.
+  // Avec Alt, Windows et Linux donnent la bonne lettre (Z sur AZERTY) ; seul Option sur Mac la
+  // transforme (« π » pour Option + P), et c'est alors seulement qu'on lit la position.
+  const altered = event.altKey && !/^[a-z]$/i.test(event.key);
+  const physical = /^(?:Digit|Numpad)(\d)$/.exec(event.code) ?? (altered ? /^Key([A-Z])$/.exec(event.code) : null);
   if (physical) return physical[1];
   const upper = event.key.toUpperCase();
   // « ß » devient « SS » en majuscule : comme l'API, on n'accepte qu'un seul caractère.
