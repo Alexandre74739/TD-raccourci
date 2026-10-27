@@ -5,7 +5,7 @@
 // L'explication à gauche dans un panneau Charbon, les touches à droite (collantes).
 // En dessous de $lg, une colonne : les touches passent avant l'explication.
 .detail {
-  color: var(--papier);
+  color: var(--fg);
   font-family: var(--font-mono);
 
   // Retour au sommaire, comme celui de la page « nouveau » (.nouveau-back).
@@ -15,7 +15,7 @@
     gap: 8px;
     align-items: center;
     border-radius: 6px;
-    color: var(--papier-60);
+    color: var(--fg-60);
     font-size: 13px;
     text-decoration: none;
     transition: color 0.12s;
@@ -26,7 +26,7 @@
     }
 
     &:hover {
-      color: var(--acide);
+      color: var(--accent-ink-hover);
 
       .icon {
         translate: -4px 0;
@@ -37,10 +37,10 @@
   // Catégorie : même badge penché que sur les cartes (.card .category).
   .category {
     padding: 4px 10px;
-    border: 1px solid var(--papier-30);
+    border: 1px solid var(--fg-30);
     border-radius: 6px;
-    background: var(--abysse);
-    color: var(--acide);
+    background: var(--bg);
+    color: var(--accent-ink-hover);
     font: 700 12px/1.4 var(--font-mono);
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -66,7 +66,7 @@
   &-lead {
     max-width: 56ch;
     margin: 0;
-    color: var(--papier-60);
+    color: var(--fg-60);
     font-size: 16px;
     line-height: 1.7;
   }
@@ -82,9 +82,9 @@
     grid-column: 1;
     grid-row: 1;
     padding: 40px;
-    border: 2px solid var(--papier-12);
+    border: 2px solid var(--fg-12);
     border-radius: 16px;
-    background: var(--charbon);
+    background: var(--surface);
   }
 
   &-aside {
@@ -98,9 +98,9 @@
   // Le raccourci en grand : la carte cartoon des fiches, touches agrandies.
   &-keys {
     padding: 24px;
-    border: 3px solid var(--papier);
+    border: 3px solid var(--fg);
     border-radius: 16px;
-    background: var(--charbon);
+    background: var(--surface);
     box-shadow: 6px 6px 0 var(--toxine);
 
     &-label {
@@ -108,7 +108,7 @@
       gap: 8px;
       align-items: center;
       margin: 0 0 20px;
-      color: var(--papier-60);
+      color: var(--fg-60);
       font-size: 12px;
       font-weight: 500;
       letter-spacing: 0.08em;
@@ -130,17 +130,17 @@
         display: inline-block;
         margin: 0;
         padding: 10px 16px 9px;
-        border: 2px solid var(--papier);
+        border: 2px solid var(--fg);
         border-radius: 8px;
-        background: var(--abysse);
-        box-shadow: 0 4px 0 var(--papier);
-        color: var(--papier);
+        background: var(--bg);
+        box-shadow: 0 4px 0 var(--fg);
+        color: var(--fg);
         font: 700 20px/1.2 var(--font-mono);
       }
 
       // Le « + » entre les touches (classe posée par keysTemplate, src/sections/sommaire.js).
       .card-keys-plus {
-        color: var(--papier-60);
+        color: var(--fg-60);
         font-weight: 700;
       }
     }
@@ -162,7 +162,7 @@
     display: grid;
     gap: 16px;
     padding: 20px;
-    border: 2px dashed var(--papier-12);
+    border: 2px dashed var(--fg-12);
     border-radius: 16px;
 
     &-title {
@@ -175,7 +175,7 @@
       text-transform: uppercase;
 
       .icon {
-        color: var(--toxine);
+        color: var(--accent-ink);
       }
     }
 
@@ -188,7 +188,7 @@
 
   .button {
     &:focus-visible {
-      outline: 2px solid var(--toxine);
+      outline: 2px solid var(--focus);
       outline-offset: 3px;
     }
   }

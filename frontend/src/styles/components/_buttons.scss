@@ -23,7 +23,7 @@
 
   // Bouton principal de la charte (Toxine, effet cartoon)
   &--primary {
-    @include mixins.cartoon(var(--papier));
+    @include mixins.cartoon(var(--fg));
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -41,12 +41,12 @@
 
   // Bouton secondaire de la charte (transparent, contour Papier, effet cartoon)
   &--secondary {
-    @include mixins.cartoon(var(--papier-30));
+    @include mixins.cartoon(var(--fg-30));
     display: inline-flex;
     align-items: center;
     background: transparent;
-    color: var(--papier);
-    border-color: var(--papier);
+    color: var(--fg);
+    border-color: var(--fg);
     font-family: var(--font-display);
     font-weight: 400;
     letter-spacing: 0.02em;
@@ -54,8 +54,8 @@
 
     &:hover {
       background: transparent;
-      color: var(--acide);
-      border-color: var(--acide);
+      color: var(--accent-ink-hover);
+      border-color: var(--accent-ink-hover);
     }
   }
 }

@@ -1,24 +1,49 @@
 :root {
-  // Palette de la charte (utilisée par le header pour l'instant)
+  // Palette de la charte : couleurs fixes, identiques dans les deux thèmes
   --toxine: #DAFF02;
   --acide: #E0FF4F;
   --papier: #FDFFF7;
   --abysse: #1E1E1E;
   --charbon: #222222;
 
-  // Dérivés de Papier pour les textes secondaires et les bordures
-  --papier-60: rgb(253 255 247 / 0.6);
-  --papier-30: rgb(253 255 247 / 0.3);
-  --papier-12: rgb(253 255 247 / 0.12);
+  // Rôles qui changent avec le thème (sombre par défaut, voir [data-theme="light"])
+  --bg: var(--abysse);
+  --surface: var(--charbon);
+  --fg: var(--papier);
+  // Dérivés du texte pour les textes secondaires et les bordures
+  --fg-60: rgb(253 255 247 / 0.6);
+  --fg-30: rgb(253 255 247 / 0.3);
+  --fg-12: rgb(253 255 247 / 0.12);
+  // Jaune utilisé comme couleur de texte : lisible seulement sur fond sombre
+  --accent-ink: var(--toxine);
+  --accent-ink-hover: var(--acide);
+  --focus: var(--toxine);
 
   --font-display: "Archivo Black", "Arial Black", sans-serif;
   --font-mono: "Martian Mono", ui-monospace, monospace;
 
   --header-height: 76px;
 
+  color-scheme: dark;
   font-family: "Avenir Next", "Segoe UI", sans-serif;
   color: #172b27;
-  background: var(--abysse);
+  background: var(--bg);
   font-synthesis: none;
   line-height: 1.6;
+}
+
+// Thème clair : fond Papier, texte Abysse. Le jaune ne sert plus qu'en fond
+// (CTA, surlignages) ; comme texte il devient un olive sombre dérivé de Toxine.
+:root[data-theme="light"] {
+  --bg: color-mix(in srgb, var(--abysse) 6%, var(--papier));
+  --surface: var(--papier);
+  --fg: var(--abysse);
+  --fg-60: rgb(30 30 30 / 0.65);
+  --fg-30: rgb(30 30 30 / 0.3);
+  --fg-12: rgb(30 30 30 / 0.12);
+  --accent-ink: color-mix(in srgb, var(--toxine) 35%, var(--abysse));
+  --accent-ink-hover: color-mix(in srgb, var(--toxine) 25%, var(--abysse));
+  --focus: var(--abysse);
+
+  color-scheme: light;
 }

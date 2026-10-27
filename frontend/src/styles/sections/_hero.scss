@@ -14,7 +14,7 @@
   margin-inline: calc(50% - 50vw);
   padding: 48px 20px;
   overflow: hidden;
-  color: var(--papier);
+  color: var(--fg);
   font-family: var(--font-mono);
   text-align: center;
 
@@ -52,7 +52,7 @@
   &-lead {
     max-width: 44ch;
     margin: 0 auto;
-    color: var(--papier-60);
+    color: var(--fg-60);
     font-size: 16px;
     line-height: 1.7;
   }
@@ -75,7 +75,7 @@
   &-icon {
     position: absolute;
     aspect-ratio: 1;
-    background: var(--papier-30);
+    background: var(--fg-30);
     mask: var(--icon) center / contain no-repeat;
     transform: rotate(var(--tilt));
     animation: hero-float var(--duration) ease-in-out infinite alternate;
