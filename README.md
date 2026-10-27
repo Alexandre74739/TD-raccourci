@@ -70,7 +70,9 @@ frontend/
     keys.js              # Format des touches : capture et affichage en français
     keys.test.js         # Tests du format des touches (npm test)
     api.js               # Appels HTTP et échappement du texte
-    style.css            # Styles adaptatifs
+    header.js            # Animations des boutons
+    sections/            # Sections de l’accueil : hero, réflexes, sommaire
+    styles/              # SCSS, importé dans l’ordre par main.scss
 ```
 
 PostgreSQL est la seule source de données : l’API ne lit plus les fichiers de `content/`. Deux tables :
