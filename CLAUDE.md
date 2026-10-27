@@ -1,13 +1,15 @@
 # Le carnet des raccourcis
 
-Shared catalogue of keyboard-shortcut cards. Each card is a Markdown file in `content/`.
+Shared catalogue of keyboard-shortcut cards, stored in PostgreSQL. `content/*.md` holds the seed cards, imported by `backend/import_markdown.py`.
 
-- `backend/`: Flask API (`app.py`), served under `/api`
+- `backend/`: Flask API (`app.py`), served under `/api`. Keys are normalized to `Ctrl+Shift+P` (`keys.py`)
 - `frontend/`: Vite + vanilla JS
-  - `src/main.js` (hash router and pages), `src/api.js`, `src/header.js`, `src/new-shortcut.js`
-  - `src/sections/`: home page sections (`hero.js`), each with its stylesheet in `src/styles/sections/`
-  - `src/styles/`: SCSS, imported in cascade order by `main.scss`: `abstracts/` (mixins, breakpoints), `base/`, `components/`, `layout/`, `sections/`, `pages/`
-- `compose.yaml`: runs both services; images are published to GHCR by `.github/workflows/docker-publish.yml`
+  - `src/main.js`: hash router, home page and shortcut page (`#/raccourci/<slug>`)
+  - `src/new-shortcut.js`: "add a shortcut" page (`#/nouveau`): 3-step form, live card preview. Also exports `icon(name)` (inline stroke icons)
+  - `src/api.js`, `src/header.js` (button animations, `setupCtaSpin`)
+  - `src/sections/`: home page sections (`hero.js`, `reflexes.js`, `sommaire.js`), each with its stylesheet in `src/styles/sections/`. `sommaire.js` also exports `keysTemplate`, reused to render keys elsewhere
+  - `src/styles/`: SCSS, imported in cascade order by `main.scss`: `abstracts/` (mixins, breakpoints), `base/`, `components/` (shared: buttons, card, form, markdown, icons…), `layout/`, `sections/`, `pages/` (`_detail`, `_nouveau`)
+- `compose.yaml`: runs db, API and frontend; images are published to GHCR by `.github/workflows/docker-publish.yml`. The frontend image copies the sources (no volume): after a change, rebuild it with `docker compose up -d --build --no-deps frontend`, or run `npm run dev` locally
 
 ## Brand guidelines (Brandboard)
 

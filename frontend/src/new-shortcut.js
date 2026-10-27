@@ -24,10 +24,11 @@ const ICONS = {
   eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" />',
   bolt: '<path d="M13.5 2 4 14h7l-1.5 8L20 10h-7z" />',
   check: '<path d="m5 12 5 5 9-10" />',
+  copy: '<rect x="8" y="8" width="13" height="13" rx="2" /><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" />',
   alert: '<path d="M12 3 2 21h20zM12 10v4M12 17.5h.01" />',
 };
 
-function icon(name) {
+export function icon(name) {
   return `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`;
 }
 
