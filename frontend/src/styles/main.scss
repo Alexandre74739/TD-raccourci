@@ -3,6 +3,7 @@
 @use "base/base";
 @use "base/typography";
 
+@use "components/icons";
 @use "components/buttons";
 @use "components/links";
 @use "components/kbd";
@@ -22,3 +23,4 @@
 
 @use "pages/index";
 @use "pages/detail";
+@use "pages/nouveau";

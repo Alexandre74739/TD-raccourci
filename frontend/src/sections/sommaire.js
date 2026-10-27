@@ -26,12 +26,17 @@ const KEY_LABELS = {
   Plus: "+",
 };
 
+// Accepte aussi la saisie libre du formulaire (« Ctrl + Maj + P ») pour l'aperçu de la carte.
 function keyLabels(keys) {
-  return keys.split("+").map((key) => KEY_LABELS[key] ?? key);
+  return keys
+    .split("+")
+    .map((key) => key.trim())
+    .filter(Boolean)
+    .map((key) => KEY_LABELS[key] ?? key);
 }
 
 // Une touche par élément, séparées par un « + » : <kbd>Ctrl</kbd>+<kbd>Maj</kbd>+<kbd>P</kbd>.
-function keysTemplate(keys) {
+export function keysTemplate(keys) {
   return keyLabels(keys)
     .map((label) => `<kbd>${e(label)}</kbd>`)
     .join('<span class="card-keys-plus">+</span>');

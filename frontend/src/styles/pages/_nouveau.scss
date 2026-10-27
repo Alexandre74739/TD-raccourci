@@ -1,0 +1,238 @@
+@use "../abstracts/breakpoints" as bp;
+@use "../abstracts/mixins";
+
+// Page « Ajouter un raccourci » (gabarit : src/new-shortcut.js).
+// Les trois étapes à gauche et l'aperçu de la carte à droite, qui reste visible pendant la saisie.
+// En dessous de $lg, une seule colonne : l'aperçu passe entre la dernière étape et le bouton.
+// Champs, étapes et éditeur : src/styles/components/_form.scss.
+.nouveau {
+  color: var(--papier);
+  font-family: var(--font-mono);
+
+  a,
+  .button {
+    @include mixins.focus-ring;
+  }
+
+  &-back {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    border-radius: 6px;
+    color: var(--papier-60);
+    font-size: 13px;
+    text-decoration: none;
+    transition: color 0.12s;
+
+    .icon {
+      width: 16px;
+      transition: translate 0.12s ease-out;
+    }
+
+    &:hover {
+      color: var(--acide);
+
+      .icon {
+        translate: -4px 0;
+      }
+    }
+  }
+
+  &-head {
+    position: relative;
+    margin: 36px 0 48px;
+  }
+
+  // Touche Ctrl de fond, comme celles du hero : décorative, masquée sur petit écran.
+  &-deco {
+    --tilt: 10deg;
+
+    position: absolute;
+    right: 2%;
+    bottom: 0;
+    width: clamp(120px, 14vw, 190px);
+    aspect-ratio: 1;
+    background: var(--papier-30);
+    mask: url("/icons/ctrl.svg") center / contain no-repeat;
+    transform: rotate(var(--tilt));
+    animation: hero-float 7s ease-in-out infinite alternate;
+
+    @include bp.below(bp.$md) {
+      display: none;
+    }
+  }
+
+  // Sur-titre en badge penché, sans couleur : le jaune reste au mot surligné.
+  &-eyebrow {
+    display: inline-block;
+    margin: 0;
+    padding: 4px 10px;
+    border: 1px solid var(--papier-30);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transform: skewX(-8deg);
+  }
+
+  &-title {
+    max-width: 15ch;
+    margin: 20px 0;
+    font-family: var(--font-display);
+    font-size: clamp(36px, 6vw, 72px);
+    font-weight: 400;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    text-wrap: balance;
+
+    // Mot-clé surligné, comme dans le hero.
+    mark {
+      display: inline-block;
+      padding: 0.04em 0.14em 0;
+      background: var(--toxine);
+      color: var(--abysse);
+      transform: skewX(-8deg);
+    }
+  }
+
+  &-lead {
+    max-width: 52ch;
+    margin: 0;
+    color: var(--papier-60);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  &-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+    gap: 28px 56px;
+    align-items: start;
+
+    > * {
+      grid-column: 1;
+    }
+  }
+
+  // Aperçu collant, à côté des trois étapes et du pied de formulaire.
+  &-preview {
+    position: sticky;
+    top: calc(var(--header-height) + 24px);
+    display: grid;
+    gap: 28px;
+    grid-column: 2;
+    grid-row: 1 / span 4;
+
+    &-title {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin: 0 0 16px;
+      color: var(--papier-60);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+
+      .icon {
+        width: 16px;
+      }
+    }
+  }
+
+  // La carte du sommaire, figée : pas de survol, et les textes d'exemple en retrait.
+  &-card {
+    pointer-events: none;
+    overflow-wrap: anywhere;
+
+    .is-empty {
+      opacity: 0.45;
+    }
+  }
+
+  &-tips {
+    padding: 20px;
+    border: 2px dashed var(--papier-12);
+    border-radius: 16px;
+    color: var(--papier-60);
+    font-size: 13px;
+    line-height: 1.6;
+
+    &-title {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin: 0 0 14px;
+      color: var(--papier);
+      font-family: var(--font-display);
+      font-size: 15px;
+      text-transform: uppercase;
+
+      .icon {
+        color: var(--toxine);
+      }
+    }
+
+    ul {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    li {
+      display: flex;
+      gap: 10px;
+
+      .icon {
+        width: 16px;
+        margin-top: 2px;
+        color: var(--papier);
+      }
+    }
+  }
+
+  @include bp.reduced-motion {
+    &-back,
+    &-back .icon {
+      transition: none;
+    }
+
+    &-back:hover .icon {
+      translate: none;
+    }
+
+    &-deco {
+      animation: none;
+    }
+  }
+
+  // Une colonne : la carte et les conseils côte à côte tant que la place le permet.
+  @include bp.below(bp.$lg) {
+    &-form {
+      grid-template-columns: minmax(0, 1fr);
+      max-width: 780px;
+    }
+
+    &-preview {
+      position: static;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      align-items: start;
+      grid-column: 1;
+      grid-row: auto;
+    }
+  }
+
+  @include bp.below(bp.$sm) {
+    &-head {
+      margin: 24px 0 32px;
+    }
+
+    &-form {
+      gap: 20px;
+    }
+  }
+}
