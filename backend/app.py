@@ -115,6 +115,13 @@ def get_shortcut(slug):
     return jsonify(shortcut)
 
 
+@app.get("/api/categories")
+def list_categories():
+    categories = get_db().execute("SELECT slug, label FROM categories").fetchall()
+    categories.sort(key=lambda category: category["label"].casefold())
+    return jsonify(categories)
+
+
 @app.post("/api/shortcuts")
 def create_shortcut():
     data = request.get_json()
