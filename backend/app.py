@@ -6,7 +6,7 @@ import psycopg
 from flask import Flask, jsonify, request
 from psycopg.errors import UniqueViolation
 from werkzeug.exceptions import HTTPException
-
+from quiz import InvalidQuiz, build_questions, grade, parse_answers, parse_count
 from db import close_db, get_db
 from keys import InvalidKeys, normalize_keys
 
