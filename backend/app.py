@@ -8,6 +8,7 @@ from psycopg.errors import UniqueViolation
 from werkzeug.exceptions import HTTPException
 
 from db import close_db, get_db
+from keys import InvalidKeys, normalize_keys
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 256 * 1024
@@ -43,7 +44,12 @@ def clean_text(data, field, maximum):
 def validate_metadata(data):
     if not isinstance(data, dict):
         raise InvalidShortcut("Les métadonnées doivent être un objet.")
-    return {field: clean_text(data, field, maximum) for field, maximum in LIMITS.items()}
+    metadata = {field: clean_text(data, field, maximum) for field, maximum in LIMITS.items()}
+    try:
+        metadata["keys"] = normalize_keys(metadata["keys"])
+    except InvalidKeys as error:
+        raise InvalidShortcut(f"Le champ keys est invalide : {error}") from error
+    return metadata
 
 
 def slugify(text):
