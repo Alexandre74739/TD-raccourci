@@ -1,4 +1,4 @@
--- Exécuté par l'image postgres au premier démarrage, quand le volume est vide.
+-- Schéma initial. Appliqué une seule fois par backend/migrate.py : ne plus le modifier.
 
 CREATE TABLE categories (
   id SERIAL PRIMARY KEY,
