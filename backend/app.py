@@ -57,8 +57,22 @@ def slugify(text):
     return re.sub(r"[^a-z0-9]+", "-", text_ascii.lower()).strip("-")
 
 
-def category_id(db, label):
-    """Retrouve la catégorie au même slug (« VS Code » = « vs code »), sinon la crée."""
+def category_id(db, data):
+    """Catégorie existante (category_slug) ou nouvelle (new_category, ou category).
+
+    Une nouvelle catégorie au même slug qu'une existante (« VS Code » = « vs code »)
+    réutilise celle-ci au lieu de créer un doublon.
+    """
+    existing = data.get("category_slug")
+    if existing is not None:
+        row = None
+        if isinstance(existing, str):
+            row = db.execute("SELECT id FROM categories WHERE slug = %s", (existing,)).fetchone()
+        if row is None:
+            raise InvalidShortcut("Catégorie inconnue : choisissez-en une dans la liste.")
+        return row["id"]
+    field = "new_category" if "new_category" in data else "category"
+    label = clean_text(data, field, CATEGORY_LIMIT)
     slug = slugify(label)[:CATEGORY_LIMIT].strip("-")
     if not slug:
         raise InvalidShortcut("La catégorie doit contenir au moins une lettre latine ou un chiffre.")
@@ -105,7 +119,6 @@ def get_shortcut(slug):
 def create_shortcut():
     data = request.get_json()
     metadata = validate_metadata(data)
-    label = clean_text(data, "category", CATEGORY_LIMIT)
     content = data.get("content")
     if not isinstance(content, str) or not content.strip():
         raise InvalidShortcut("Le contenu Markdown est obligatoire.")
@@ -120,7 +133,7 @@ def create_shortcut():
                 """INSERT INTO fiches (slug, title, description, keys, category_id, content)
                    VALUES (%s, %s, %s, %s, %s, %s)""",
                 (slug, metadata["title"], metadata["description"], metadata["keys"],
-                 category_id(db, label), content.strip()),
+                 category_id(db, data), content.strip()),
             )
     except UniqueViolation:
         return jsonify(error="Une fiche porte déjà ce titre. Choisissez un autre titre."), 409
