@@ -1,0 +1,43 @@
+@use "breakpoints" as bp;
+
+// Contour de focus de la charte : 2px Toxine avec un décalage.
+@mixin focus-ring($offset: 3px) {
+  &:focus-visible {
+    outline: 2px solid var(--toxine);
+    outline-offset: $offset;
+  }
+}
+
+// Effet "cartoon" : bordure épaisse et ombre portée nette, décalée.
+// Au survol l'élément se soulève, au clic il s'enfonce jusqu'à toucher son ombre.
+// La couleur de l'ombre passe par --cartoon-shadow pour pouvoir la changer selon l'état.
+@mixin cartoon($shadow: var(--papier), $offset: 4px, $lift: 2px) {
+  --cartoon-shadow: #{$shadow};
+  border: 2px solid var(--abysse);
+  box-shadow: $offset $offset 0 var(--cartoon-shadow);
+  transition:
+    transform 0.12s ease-out,
+    box-shadow 0.12s ease-out,
+    background 0.12s,
+    border-color 0.12s,
+    color 0.12s;
+
+  &:hover {
+    transform: translate(-$lift, -$lift);
+    box-shadow: ($offset + $lift) ($offset + $lift) 0 var(--cartoon-shadow);
+  }
+
+  &:active {
+    transform: translate($offset, $offset);
+    box-shadow: 0 0 0 var(--cartoon-shadow);
+  }
+
+  @include bp.reduced-motion {
+    transition: none;
+
+    &:hover,
+    &:active {
+      transform: none;
+    }
+  }
+}

@@ -2,7 +2,7 @@ import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { api, escapeHtml as e } from './api.js';
 import { showForm } from './new-shortcut.js';
-import './style.css';
+import './styles/main.scss';
 
 const app = document.querySelector('#app');
 let navigation = 0;

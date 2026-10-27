@@ -1,0 +1,55 @@
+@use "../abstracts/breakpoints" as bp;
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+
+  @include bp.below(bp.$md) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include bp.below(bp.$sm) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  border: 1px solid #d2dccd;
+  background: #fffef9;
+  padding: 25px;
+  border-radius: 14px;
+  text-decoration: none;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px #193e3310;
+  }
+
+  h3 {
+    font-size: 22px;
+    margin: 16px 0 0;
+  }
+
+  p {
+    font-size: 15px;
+    color: #647062;
+  }
+
+  .read {
+    margin-top: auto;
+    padding-top: 12px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  @include bp.reduced-motion {
+    transition: none;
+  }
+}

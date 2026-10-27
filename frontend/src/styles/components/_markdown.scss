@@ -1,0 +1,43 @@
+.markdown {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #d2dccd;
+  overflow-wrap: anywhere;
+
+  h2 {
+    margin-top: 30px;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+  }
+
+  pre {
+    background: #193e33;
+    color: #f5f6ee;
+    padding: 20px;
+    border-radius: 8px;
+    overflow-x: auto;
+  }
+
+  table {
+    display: block;
+    overflow-x: auto;
+    border-collapse: collapse;
+  }
+
+  th,
+  td {
+    border: 1px solid #bac8b7;
+    padding: 8px;
+  }
+
+  blockquote {
+    border-left: 4px solid #66824b;
+    margin-left: 0;
+    padding-left: 20px;
+    color: #59675d;
+  }
+}

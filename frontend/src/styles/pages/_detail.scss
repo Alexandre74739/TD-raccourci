@@ -1,0 +1,11 @@
+.detail {
+  max-width: 820px;
+
+  h1 {
+    font-size: clamp(32px, 5vw, 52px);
+  }
+
+  > kbd {
+    display: inline-block;
+  }
+}

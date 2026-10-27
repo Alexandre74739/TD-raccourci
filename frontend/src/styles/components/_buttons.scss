@@ -1,0 +1,41 @@
+@use "../abstracts/mixins";
+
+.button {
+  display: inline-block;
+  background: #193e33;
+  color: white;
+  border: 0;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover {
+    background: #2f5947;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: wait;
+  }
+
+  // Bouton principal de la charte (Toxine, effet cartoon)
+  &--primary {
+    @include mixins.cartoon(var(--papier));
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--toxine);
+    color: var(--abysse);
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+
+    &:hover {
+      background: var(--acide);
+    }
+  }
+}
