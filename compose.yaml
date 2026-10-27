@@ -18,11 +18,15 @@ services:
 
   api:
     image: ghcr.io/alexandre74739/shortcuts-back
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     volumes:
       - ./content:/app/content
 
   frontend:
     image: ghcr.io/alexandre74739/shortcuts-front
+    build: ./frontend
     environment:
       API_PROXY_TARGET: http://api:5000
     ports:
