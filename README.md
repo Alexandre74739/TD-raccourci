@@ -11,7 +11,7 @@ git clone <URL-DU-DEPOT>
 cd raccourcis-template
 ```
 
-Démarrez PostgreSQL, à la racine du dépôt. Au premier lancement, les tables sont créées par `backend/schema.sql` :
+Démarrez PostgreSQL, à la racine du dépôt :
 
 ```bash
 docker compose up -d db
@@ -24,6 +24,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 pip install -r backend/requirements.txt
 export DATABASE_URL=postgresql://raccourcis:raccourcis@127.0.0.1:5432/raccourcis
+python backend/migrate.py           # à relancer après chaque git pull : met la base à jour
 python backend/import_markdown.py   # une seule fois : importe les fiches d’exemple
 flask --app backend/app run --host 0.0.0.0 --port 5000 --debug
 ```
@@ -51,7 +52,8 @@ backend/
   app.py                 # Routes API et validation
   db.py                  # Connexion à PostgreSQL (DATABASE_URL)
   keys.py                # Format normalisé des touches
-  schema.sql             # Tables, créées au premier démarrage de PostgreSQL
+  migrate.py             # Applique les migrations manquantes
+  migrations/*.sql       # Évolutions du schéma, numérotées : 001_…, 002_…
   import_markdown.py     # Import des fiches content/*.md en base
   test_keys.py           # Tests du format des touches
   requirements.txt       # Dépendances Python
@@ -73,6 +75,24 @@ PostgreSQL est la seule source de données : l’API ne lit plus les fichiers de
 - `fiches` : titre, description, touches, catégorie et contenu Markdown. Les colonnes `keys_macos`, `keys_linux` et `keys_windows` sont prévues pour les alternatives par système.
 
 Pour repartir d’une base vide : `docker compose down -v`, qui supprime aussi le volume des données.
+
+## Faire évoluer la base : les migrations
+
+Le schéma n’est jamais modifié à la main : chaque changement est un fichier SQL numéroté dans `backend/migrations/`. `backend/migrate.py` applique dans l’ordre ceux qui manquent et les note dans la table `schema_migrations`. Avec Docker, il s’exécute automatiquement à chaque démarrage de l’API : après un `git pull`, `docker compose up -d --build` suffit pour que la base de chacun suive le code, sans perdre de fiche.
+
+Pour ajouter une colonne, par exemple :
+
+```sql
+-- backend/migrations/002_add_fiche_author.sql
+ALTER TABLE fiches ADD COLUMN author VARCHAR(80);
+```
+
+Règles pour travailler à plusieurs :
+
+- **ne modifiez jamais une migration déjà fusionnée** : elle a déjà été appliquée chez les autres et ne repasserait pas. Ajoutez une nouvelle migration ;
+- nom au format `001_description.sql` : trois chiffres, puis minuscules, chiffres et `_` ;
+- si deux branches ajoutent chacune une migration avec le même numéro, l’API refuse de démarrer : renumérotez celle de la branche fusionnée en second ;
+- une migration qui échoue est annulée en entier, et les suivantes ne sont pas appliquées.
 
 ## Format des touches
 
@@ -188,7 +208,7 @@ docker compose down
 La configuration fournie est destinée au développement local :
 
 - **frontend** : Node et Vite sur le port 5173, accessible uniquement depuis la machine hôte. Les dépendances sont installées avec `npm ci` à partir du fichier de verrouillage.
-- **api** : Python et Flask sur le port interne 5000. Le frontend transmet `/api` à `http://api:5000` grâce à `API_PROXY_TARGET`. Dans un conteneur, `localhost` désigne ce conteneur lui-même. L’API démarre une fois la base prête et s’y connecte grâce à `DATABASE_URL`.
+- **api** : Python et Flask sur le port interne 5000. Le frontend transmet `/api` à `http://api:5000` grâce à `API_PROXY_TARGET`. Dans un conteneur, `localhost` désigne ce conteneur lui-même. L’API démarre une fois la base prête, applique les [migrations](#faire-évoluer-la-base--les-migrations) manquantes, puis s’y connecte grâce à `DATABASE_URL`.
 - **db** : PostgreSQL 18, accessible depuis la machine hôte sur `127.0.0.1:5432` (utilisateur, mot de passe et base : `raccourcis`) avec un client PostgreSQL comme TablePlus ou DBeaver. Ce port ne s’ouvre pas dans un navigateur : utilisez Adminer pour ça. Le mot de passe se change avec la variable `POSTGRES_PASSWORD`, par exemple dans un fichier `.env` à la racine (ignoré par Git).
 - **adminer** : interface web pour consulter la base, sur **http://localhost:8080**, accessible uniquement depuis la machine hôte. Choisissez le système **PostgreSQL**, puis serveur `db`, utilisateur `raccourcis`, mot de passe `raccourcis` et base `raccourcis`.
 - **Persistance** : les données sont dans le volume nommé `db-data`. Les fiches créées restent présentes après `docker compose down`.
