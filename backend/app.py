@@ -2,6 +2,7 @@
 import re
 import unicodedata
 
+import psycopg
 from flask import Flask, jsonify, request
 from psycopg.errors import UniqueViolation
 from werkzeug.exceptions import HTTPException
@@ -71,6 +72,12 @@ def invalid_shortcut(error):
 @app.errorhandler(HTTPException)
 def http_error(error):
     return jsonify(error=error.description), error.code
+
+
+@app.errorhandler(psycopg.Error)
+def database_error(error):
+    app.logger.error("Erreur de base de données : %s", type(error).__name__)
+    return jsonify(error="Impossible de lire ou écrire dans la base de données."), 500
 
 
 @app.get("/api/shortcuts")
