@@ -10,7 +10,8 @@ services:
     ports:
       - "127.0.0.1:5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U raccourcis -d raccourcis"]
+      # En TCP : pendant l'initialisation d'un volume vide, le serveur temporaire n'écoute que sur le socket local.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U raccourcis -d raccourcis"]
       interval: 2s
       timeout: 5s
       retries: 15
