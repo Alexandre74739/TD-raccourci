@@ -6,10 +6,12 @@ Shared catalogue of keyboard-shortcut cards, stored in PostgreSQL. `content/*.md
 - `frontend/`: Vite + vanilla JS
   - `src/main.js`: hash router, home page and shortcut page (`#/raccourci/<slug>`)
   - `src/new-shortcut.js`: "add a shortcut" page (`#/nouveau`): 3-step form, live card preview. Also exports `icon(name)` (inline stroke icons)
+  - `src/keys.js`: normalized key format on the frontend: keyboard event → `Ctrl+Shift+P`, French labels per OS (`Cmd` on Mac, `Win` elsewhere). Tested by `src/keys.test.js` (`npm test`)
+  - `src/key-input.js`: key field captured from the keyboard, with on-screen modifiers for shortcuts the OS intercepts. `src/category-input.js`: category combobox (pick an existing one or create a new one)
   - `src/api.js`, `src/header.js` (button animations, `setupCtaSpin`)
   - `src/theme.js`: dark/light toggle (`<html data-theme="light">`, saved in `localStorage`, falling back to `prefers-color-scheme` when nothing is saved, applied before paint by `public/theme-init.js`, a blocking classic script in `<head>`). Components use the role tokens from `base/_root.scss` (`--bg`, `--surface`, `--fg`, `--fg-60/30/12`, `--accent-ink`, `--accent-ink-hover`, `--focus`), not the raw palette, except for fixed pairings (Abysse text on Toxine). Light-theme logos: `logo-*-dark.svg`
   - `src/sections/`: home page sections (`hero.js`, `reflexes.js`, `sommaire.js`), each with its stylesheet in `src/styles/sections/`. `sommaire.js` also exports `keysTemplate`, reused to render keys elsewhere
-  - `src/styles/`: SCSS, imported in cascade order by `main.scss`: `abstracts/` (mixins, breakpoints), `base/`, `components/` (shared: buttons, card, form, markdown, icons…), `layout/`, `sections/`, `pages/` (`_detail`, `_nouveau`)
+  - `src/styles/`: SCSS, imported in cascade order by `main.scss`: `abstracts/` (mixins, breakpoints), `base/`, `components/` (shared: buttons, card, form, key-field, combobox, markdown, icons…), `layout/`, `sections/`, `pages/` (`_detail`, `_nouveau`)
 - `compose.yaml`: runs db, API and frontend; images are published to GHCR by `.github/workflows/docker-publish.yml`. The frontend image copies the sources (no volume): after a change, rebuild it with `docker compose up -d --build --no-deps frontend`, or run `npm run dev` locally
 
 ## Brand guidelines (Brandboard)
