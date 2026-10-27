@@ -1,71 +1,103 @@
-import { marked } from 'marked';
-import DOMPurify from 'dompurify';
-import { api, escapeHtml as e } from './api.js';
-import { showForm } from './new-shortcut.js';
-import './style.css';
+import { marked } from "marked";
+import DOMPurify from "dompurify";
+import { api, escapeHtml as e } from "./api.js";
+import { icon, showForm } from "./new-shortcut.js";
+import { heroTemplate, setupHero } from "./sections/hero.js";
+import { reflexesTemplate } from "./sections/reflexes.js";
+import {
+  keysTemplate,
+  sommaireTemplate,
+  setupSommaire,
+} from "./sections/sommaire.js";
+import "./styles/main.scss";
 
-const app = document.querySelector('#app');
+const app = document.querySelector("#app");
 let navigation = 0;
 
 function showIndex(shortcuts) {
   app.innerHTML = `
-    <p class="eyebrow">LE SAVOIR DE LA CLASSE</p>
-    <h1>Moins de clics.<br><span>Plus de réflexes.</span></h1>
-    <p class="intro">Nos raccourcis préférés, documentés ensemble. Explorez une fiche ou partagez votre prochaine découverte.</p>
-    <div class="toolbar"><h2>Le sommaire <span class="count">${shortcuts.length}</span></h2>
-    <label class="search">Rechercher une fiche<input id="search" type="search" placeholder="Titre, touches, catégorie…" /></label></div>
-    <div id="cards" class="cards"></div>`;
-  const cards = document.querySelector('#cards');
-  function renderCards(query = '') {
-    const matches = shortcuts.filter((item) =>
-      `${item.title} ${item.description} ${item.keys} ${item.category}`.toLocaleLowerCase('fr').includes(query));
-    cards.innerHTML = matches.map((item) => `
-      <a class="card" href="#/raccourci/${encodeURIComponent(item.slug)}">
-        <span class="category">${e(item.category)}</span><kbd>${e(item.keys)}</kbd>
-        <h3>${e(item.title)}</h3><p>${e(item.description)}</p><span class="read">Lire la fiche ↗</span>
-      </a>`).join('') || '<p class="empty">Aucune fiche trouvée. Ajoutez votre premier raccourci !</p>';
-  }
-  renderCards();
-  document.querySelector('#search').addEventListener('input', (event) => {
-    renderCards(event.target.value.trim().toLocaleLowerCase('fr'));
-  });
+    ${heroTemplate()}
+    ${reflexesTemplate()}
+    ${sommaireTemplate(shortcuts)}`;
+  setupHero();
+  setupSommaire(shortcuts);
 }
 
+// Fiche d'un raccourci (styles : src/styles/pages/_detail.scss, contenu : components/_markdown.scss).
+// Sur grand écran, le contenu à gauche et les touches à droite ; sur mobile, les touches d'abord.
 function showShortcut(shortcut) {
   app.innerHTML = `
-    <a class="back" href="#/">← Retour au sommaire</a>
-    <article class="detail"><span class="category">${e(shortcut.category)}</span>
-      <h1>${e(shortcut.title)}</h1><p class="intro">${e(shortcut.description)}</p>
-      <kbd>${e(shortcut.keys)}</kbd><div id="markdown" class="markdown"></div>
-    </article>`;
+    <div class="detail">
+      <a class="detail-back" href="#/">${icon("back")} Retour au sommaire</a>
+      <div class="detail-head">
+        <span class="category">${e(shortcut.category)}</span>
+        <h1 class="detail-title">${e(shortcut.title)}</h1>
+        <p class="detail-lead">${e(shortcut.description)}</p>
+      </div>
+      <div class="detail-layout">
+        <aside class="detail-aside" aria-label="Le raccourci">
+          <div class="detail-keys">
+            <p class="detail-keys-label">${icon("keyboard")} Le raccourci</p>
+            <p class="detail-keys-combo">${keysTemplate(shortcut.keys)}</p>
+            <button class="button button--secondary detail-copy" type="button">${icon("copy")} <span data-copy-label>Copier</span></button>
+          </div>
+          <div class="detail-share">
+            <p class="detail-share-title">${icon("bolt")} Une astuce à partager&nbsp;?</p>
+            <a class="button button--secondary" href="#/nouveau">Ajouter une fiche</a>
+          </div>
+        </aside>
+        <article id="markdown" class="markdown detail-content"></article>
+      </div>
+    </div>`;
   // Le Markdown est du contenu externe : nettoyer le HTML avant de l'insérer.
-  document.querySelector('#markdown').innerHTML = DOMPurify.sanitize(marked.parse(shortcut.content));
+  document.querySelector("#markdown").innerHTML = DOMPurify.sanitize(
+    marked.parse(shortcut.content),
+  );
+  // Texte copié : les touches affichées, comme « Ctrl + Maj + P ».
+  const combo = [...document.querySelectorAll(".detail-keys-combo kbd")]
+    .map((key) => key.textContent)
+    .join(" + ");
+  const copy = document.querySelector(".detail-copy");
+  const copyLabel = copy.querySelector("[data-copy-label]");
+  copy.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(combo);
+      copyLabel.textContent = "Copié !";
+    } catch {
+      copyLabel.textContent = "Copie impossible";
+    }
+    setTimeout(() => {
+      copyLabel.textContent = "Copier";
+    }, 2000);
+  });
 }
 
 async function route() {
   const current = ++navigation;
-  const path = location.hash.slice(1) || '/';
+  const path = location.hash.slice(1) || "/";
   app.innerHTML = '<p role="status">Chargement des fiches…</p>';
   try {
-    if (path === '/nouveau') {
+    if (path === "/nouveau") {
       showForm(app);
-    } else if (path === '/') {
+    } else if (path === "/") {
       const shortcuts = await api();
       if (current !== navigation) return;
       showIndex(shortcuts);
     } else if (/^\/raccourci\/[^/]+$/.test(path)) {
-      const shortcut = await api(`/${encodeURIComponent(decodeURIComponent(path.split('/')[2]))}`);
+      const shortcut = await api(
+        `/${encodeURIComponent(decodeURIComponent(path.split("/")[2]))}`,
+      );
       if (current !== navigation) return;
       showShortcut(shortcut);
     } else {
-      throw new Error('Cette page n’existe pas.');
+      throw new Error("Cette page n’existe pas.");
     }
   } catch (error) {
     if (current !== navigation) return;
-    app.innerHTML = `<div class="notice" role="alert"><h1>Oups…</h1><p>${e(error.message)}</p><a href="#/">Revenir au sommaire</a></div>`;
+    app.innerHTML = `<div class="notice" role="alert"><h1>Oups…</h1><p>${e(error.message)}</p><a class="button button--secondary" href="#/">Revenir au sommaire</a></div>`;
   }
   app.focus();
 }
 
-window.addEventListener('hashchange', route);
+window.addEventListener("hashchange", route);
 route();

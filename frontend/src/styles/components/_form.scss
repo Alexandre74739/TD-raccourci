@@ -1,0 +1,375 @@
+@use "../abstracts/breakpoints" as bp;
+@use "../abstracts/mixins";
+
+label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+input,
+textarea {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 13px 14px;
+  border: 2px solid var(--papier-60);
+  border-radius: 10px;
+  background: var(--abysse);
+  color: var(--papier);
+  color-scheme: dark;
+  font: inherit;
+  font-size: 14px;
+  transition: border-color 0.15s;
+
+  &::placeholder {
+    color: var(--papier-60);
+  }
+
+  &:hover,
+  &:focus {
+    border-color: var(--papier);
+  }
+
+  &:focus {
+    outline: 2px solid var(--toxine);
+    outline-offset: 3px;
+  }
+
+  @include bp.reduced-motion {
+    transition: none;
+  }
+}
+
+textarea {
+  resize: vertical;
+  line-height: 1.7;
+}
+
+.search {
+  width: min(100%, 330px);
+  font-size: 13px;
+
+  @include bp.below(bp.$sm) {
+    width: 100%;
+  }
+}
+
+.form-step {
+  min-width: 0;
+  margin: 0;
+  padding: 28px;
+  border: 2px solid var(--papier-12);
+  border-radius: 16px;
+  background: var(--charbon);
+
+  // La légende flotte pour se placer dans le panneau comme un titre ordinaire.
+  &-title {
+    display: flex;
+    float: left;
+    gap: 14px;
+    align-items: center;
+    width: 100%;
+    margin: 0 0 24px;
+    padding: 0;
+    font-family: var(--font-display);
+    font-size: 20px;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+
+    + * {
+      clear: both;
+    }
+  }
+
+  &-number {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 38px;
+    aspect-ratio: 1;
+    border: 2px solid var(--papier);
+    border-radius: 8px;
+    background: var(--abysse);
+    box-shadow: 0 3px 0 var(--papier);
+    font: 700 13px/1 var(--font-mono);
+  }
+
+  @include bp.below(bp.$sm) {
+    padding: 20px;
+
+    &-title {
+      font-size: 17px;
+    }
+  }
+}
+
+// Le titre sur toute la largeur, puis la catégorie (courte) à côté de la description.
+.form-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 24px 20px;
+
+  @include bp.below(bp.$sm) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+
+  &--wide {
+    grid-column: 1 / -1;
+  }
+
+  &-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: center;
+  }
+
+  &-label {
+    display: inline-flex;
+    gap: 10px;
+    align-items: center;
+    color: var(--papier);
+    font-size: 13px;
+    font-weight: 500;
+
+    .icon {
+      width: 16px;
+      color: var(--papier-60);
+    }
+  }
+
+  // Compteur de caractères : il passe en Acide près de la limite.
+  &-count {
+    color: var(--papier-60);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+
+    &.is-near {
+      color: var(--acide);
+    }
+  }
+
+  &-keys {
+    padding-block: 15px;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  &-hint {
+    margin: 0;
+    color: var(--papier-60);
+    font-size: 12px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+
+    code {
+      padding: 1px 6px;
+      border: 1px solid var(--papier-12);
+      border-radius: 4px;
+      background: var(--abysse);
+      color: var(--papier);
+      font-family: var(--font-mono);
+    }
+  }
+}
+
+// Modificateurs : des touches qui s'enfoncent et passent en Toxine une fois actives.
+.key-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+
+  &-label {
+    margin-right: 4px;
+    color: var(--papier-60);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+
+    @include bp.below(bp.$sm) {
+      flex-basis: 100%;
+    }
+  }
+}
+
+.key-toggle {
+  @include mixins.focus-ring;
+  min-width: 52px;
+  padding: 8px 12px 7px;
+  border: 2px solid var(--papier);
+  border-radius: 7px;
+  background: var(--abysse);
+  box-shadow: 0 3px 0 var(--papier);
+  color: var(--papier);
+  cursor: pointer;
+  font: 700 13px/1.3 var(--font-mono);
+  transition:
+    transform 0.12s ease-out,
+    box-shadow 0.12s ease-out,
+    background 0.12s,
+    border-color 0.12s,
+    color 0.12s;
+
+  &:hover {
+    border-color: var(--acide);
+    box-shadow: 0 3px 0 var(--acide);
+    color: var(--acide);
+  }
+
+  &[aria-pressed="true"] {
+    border-color: var(--papier);
+    background: var(--toxine);
+    box-shadow: 0 0 0 var(--papier);
+    color: var(--abysse);
+    transform: translateY(3px);
+  }
+
+  @include bp.reduced-motion {
+    transition: none;
+
+    &[aria-pressed="true"] {
+      transform: none;
+    }
+  }
+}
+
+// Éditeur Markdown : barre d'outils au-dessus de la zone de texte, dans un même cadre.
+.editor {
+  border: 2px solid var(--papier-60);
+  border-radius: 10px;
+  background: var(--abysse);
+  transition: border-color 0.15s;
+
+  &:hover,
+  &:focus-within {
+    border-color: var(--papier);
+  }
+
+  // Le contour de focus entoure tout l'éditeur quand on écrit.
+  &:has(textarea:focus) {
+    outline: 2px solid var(--toxine);
+    outline-offset: 3px;
+  }
+
+  &-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 8px;
+    border-bottom: 2px solid var(--papier-12);
+  }
+
+  &-tool {
+    @include mixins.focus-ring(1px);
+    display: grid;
+    place-items: center;
+    width: 38px;
+    aspect-ratio: 1;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--papier-60);
+    cursor: pointer;
+    transition:
+      background 0.12s,
+      color 0.12s;
+
+    &:hover {
+      background: var(--papier-12);
+      color: var(--acide);
+    }
+  }
+
+  textarea {
+    min-height: 260px;
+    padding: 16px;
+    border: 0;
+    border-radius: 0 0 8px 8px;
+    background: transparent;
+    font-size: 13px;
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  @include bp.reduced-motion {
+    &,
+    &-tool {
+      transition: none;
+    }
+  }
+}
+
+.form-footer {
+  display: grid;
+  gap: 20px;
+}
+
+// Erreur renvoyée par l'API : encadré Toxine, masqué tant qu'il est vide.
+.form-error {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin: 0;
+  padding: 14px 16px;
+  border: 2px solid var(--toxine);
+  border-radius: 10px;
+  background: var(--charbon);
+  color: var(--papier);
+  font-size: 14px;
+
+  &:empty {
+    display: none;
+  }
+
+  .icon {
+    width: 20px;
+    color: var(--toxine);
+  }
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: flex-end;
+
+  // La note se replie sur plusieurs lignes plutôt que de pousser les boutons à la ligne.
+  &-note {
+    flex: 1 1 180px;
+    margin: 0;
+    color: var(--papier-60);
+    font-size: 12px;
+  }
+
+  .button {
+    padding: 13px 20px;
+    font-size: 14px;
+  }
+
+  // Sur mobile, le bouton principal passe en haut et les boutons prennent toute la largeur.
+  @include bp.below(bp.$sm) {
+    flex-direction: column-reverse;
+    align-items: stretch;
+
+    &-note {
+      flex: none;
+      text-align: center;
+    }
+
+    .button {
+      justify-content: center;
+    }
+  }
+}

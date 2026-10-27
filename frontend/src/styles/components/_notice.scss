@@ -1,0 +1,23 @@
+// Page d'erreur du routeur (src/main.js) : panneau Charbon et retour au sommaire.
+.notice {
+  max-width: 640px;
+  padding: 32px;
+  border: 2px solid var(--papier-12);
+  border-radius: 16px;
+  background: var(--charbon);
+  color: var(--papier);
+  font-family: var(--font-mono);
+
+  h1 {
+    margin-top: 0;
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: normal;
+    text-transform: uppercase;
+  }
+
+  p {
+    margin: 0 0 24px;
+    color: var(--papier-60);
+  }
+}

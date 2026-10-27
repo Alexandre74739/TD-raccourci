@@ -1,0 +1,24 @@
+:root {
+  // Palette de la charte (utilisée par le header pour l'instant)
+  --toxine: #DAFF02;
+  --acide: #E0FF4F;
+  --papier: #FDFFF7;
+  --abysse: #1E1E1E;
+  --charbon: #222222;
+
+  // Dérivés de Papier pour les textes secondaires et les bordures
+  --papier-60: rgb(253 255 247 / 0.6);
+  --papier-30: rgb(253 255 247 / 0.3);
+  --papier-12: rgb(253 255 247 / 0.12);
+
+  --font-display: "Archivo Black", "Arial Black", sans-serif;
+  --font-mono: "Martian Mono", ui-monospace, monospace;
+
+  --header-height: 76px;
+
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  color: #172b27;
+  background: var(--abysse);
+  font-synthesis: none;
+  line-height: 1.6;
+}

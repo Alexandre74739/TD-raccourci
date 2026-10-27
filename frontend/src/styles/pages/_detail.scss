@@ -1,0 +1,240 @@
+@use "../abstracts/breakpoints" as bp;
+@use "../abstracts/mixins";
+
+// Fiche d'un raccourci (gabarit : showShortcut dans src/main.js).
+// L'explication à gauche dans un panneau Charbon, les touches à droite (collantes).
+// En dessous de $lg, une colonne : les touches passent avant l'explication.
+.detail {
+  color: var(--papier);
+  font-family: var(--font-mono);
+
+  // Retour au sommaire, comme celui de la page « nouveau » (.nouveau-back).
+  &-back {
+    @include mixins.focus-ring;
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    border-radius: 6px;
+    color: var(--papier-60);
+    font-size: 13px;
+    text-decoration: none;
+    transition: color 0.12s;
+
+    .icon {
+      width: 16px;
+      transition: translate 0.12s ease-out;
+    }
+
+    &:hover {
+      color: var(--acide);
+
+      .icon {
+        translate: -4px 0;
+      }
+    }
+  }
+
+  // Catégorie : même badge penché que sur les cartes (.card .category).
+  .category {
+    padding: 4px 10px;
+    border: 1px solid var(--papier-30);
+    border-radius: 6px;
+    background: var(--abysse);
+    color: var(--acide);
+    font: 700 12px/1.4 var(--font-mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transform: skewX(-8deg);
+  }
+
+  &-head {
+    max-width: 820px;
+    margin: 36px 0 48px;
+  }
+
+  &-title {
+    margin: 20px 0;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(34px, 5.5vw, 64px);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+
+  &-lead {
+    max-width: 56ch;
+    margin: 0;
+    color: var(--papier-60);
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  &-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+    gap: 28px 56px;
+    align-items: start;
+  }
+
+  &-content {
+    grid-column: 1;
+    grid-row: 1;
+    padding: 40px;
+    border: 2px solid var(--papier-12);
+    border-radius: 16px;
+    background: var(--charbon);
+  }
+
+  &-aside {
+    position: sticky;
+    top: calc(var(--header-height) + 24px);
+    display: grid;
+    gap: 24px;
+    grid-column: 2;
+  }
+
+  // Le raccourci en grand : la carte cartoon des fiches, touches agrandies.
+  &-keys {
+    padding: 24px;
+    border: 3px solid var(--papier);
+    border-radius: 16px;
+    background: var(--charbon);
+    box-shadow: 6px 6px 0 var(--toxine);
+
+    &-label {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin: 0 0 20px;
+      color: var(--papier-60);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+
+      .icon {
+        width: 16px;
+      }
+    }
+
+    &-combo {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin: 0 0 24px;
+
+      kbd {
+        display: inline-block;
+        margin: 0;
+        padding: 10px 16px 9px;
+        border: 2px solid var(--papier);
+        border-radius: 8px;
+        background: var(--abysse);
+        box-shadow: 0 4px 0 var(--papier);
+        color: var(--papier);
+        font: 700 20px/1.2 var(--font-mono);
+      }
+
+      // Le « + » entre les touches (classe posée par keysTemplate, src/sections/sommaire.js).
+      .card-keys-plus {
+        color: var(--papier-60);
+        font-weight: 700;
+      }
+    }
+  }
+
+  &-copy {
+    gap: 8px;
+    justify-content: center;
+    width: 100%;
+    padding: 11px 16px;
+    font-size: 13px;
+
+    .icon {
+      width: 16px;
+    }
+  }
+
+  &-share {
+    display: grid;
+    gap: 16px;
+    padding: 20px;
+    border: 2px dashed var(--papier-12);
+    border-radius: 16px;
+
+    &-title {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 15px;
+      text-transform: uppercase;
+
+      .icon {
+        color: var(--toxine);
+      }
+    }
+
+    .button {
+      justify-content: center;
+      padding: 11px 16px;
+      font-size: 13px;
+    }
+  }
+
+  .button {
+    &:focus-visible {
+      outline: 2px solid var(--toxine);
+      outline-offset: 3px;
+    }
+  }
+
+  @include bp.reduced-motion {
+    &-back,
+    &-back .icon {
+      transition: none;
+    }
+
+    &-back:hover .icon {
+      translate: none;
+    }
+  }
+
+  @include bp.below(bp.$lg) {
+    &-layout {
+      grid-template-columns: minmax(0, 1fr);
+      max-width: 820px;
+    }
+
+    &-content,
+    &-aside {
+      grid-column: 1;
+      grid-row: auto;
+    }
+
+    // Une colonne : les touches et l'invitation à partager côte à côte tant que la place le permet.
+    &-aside {
+      position: static;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      align-items: start;
+    }
+  }
+
+  @include bp.below(bp.$sm) {
+    &-head {
+      margin: 24px 0 32px;
+    }
+
+    &-content {
+      padding: 24px 20px;
+    }
+
+    &-keys-combo kbd {
+      font-size: 17px;
+    }
+  }
+}

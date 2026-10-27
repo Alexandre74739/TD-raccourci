@@ -1,0 +1,12 @@
+// Icônes au trait en SVG inline (.icon) : elles prennent la couleur du texte.
+.icon {
+  flex: none;
+  width: 18px;
+  height: auto;
+  aspect-ratio: 1;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

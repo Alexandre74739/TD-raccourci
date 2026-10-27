@@ -1,0 +1,26 @@
+// Point d'entrée : l'ordre des @use fixe l'ordre de la cascade.
+@use "base/root";
+@use "base/base";
+@use "base/typography";
+
+@use "components/icons";
+@use "components/buttons";
+@use "components/links";
+@use "components/kbd";
+@use "components/badges";
+@use "components/card";
+@use "components/form";
+@use "components/markdown";
+@use "components/notice";
+
+@use "layout/header";
+@use "layout/main";
+@use "layout/footer";
+
+@use "sections/hero";
+@use "sections/reflexes";
+@use "sections/sommaire";
+
+@use "pages/index";
+@use "pages/detail";
+@use "pages/nouveau";

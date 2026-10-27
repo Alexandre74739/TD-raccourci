@@ -1,0 +1,14 @@
+@use "../abstracts/breakpoints" as bp;
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: end;
+  margin: 48px 0 24px;
+
+  @include bp.below(bp.$sm) {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

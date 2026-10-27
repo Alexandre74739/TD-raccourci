@@ -1,0 +1,14 @@
+kbd {
+  display: block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  font:
+    600 16px ui-monospace,
+    monospace;
+  border: 1px solid #c8d1c4;
+  border-bottom-width: 4px;
+  background: #f3f5ed;
+  padding: 10px 14px;
+  border-radius: 7px;
+  margin: 24px 0 8px;
+}

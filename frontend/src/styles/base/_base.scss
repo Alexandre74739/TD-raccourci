@@ -1,0 +1,17 @@
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-padding-top: calc(var(--header-height) + 16px);
+}
+
+body {
+  margin: 0;
+  padding-top: var(--header-height);
+  overflow-x: clip;
+}
+
+a {
+  color: inherit;
+}

@@ -1,0 +1,178 @@
+@use "../abstracts/breakpoints" as bp;
+
+// Bandeau Toxine sous le hero (gabarit : src/sections/reflexes.js).
+// Pleine largeur comme le hero, bord haut en vague, style cartoon (contour Abysse, ombre nette)
+// et sept éclairs rangés dans les marges de part et d'autre du texte.
+.reflexes {
+  --wave: clamp(40px, 6vw, 96px);
+  --content: 720px;
+  // Largeur de chaque marge latérale, recalculée là où elle est utilisée (100% = largeur du bandeau).
+  --gutter: (100% - var(--content)) / 2;
+  --shadow: 6px;
+
+  position: relative;
+  isolation: isolate;
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+  padding: calc(var(--wave) + 56px) 20px 96px;
+  // clip plutôt que hidden : hidden créerait un conteneur de défilement et fausserait view() plus bas.
+  overflow: clip;
+  background: var(--toxine);
+  color: var(--abysse);
+  text-align: center;
+  // Bord haut en vague : le dessin de public/icons/wave.svg découpe le haut, le reste est plein.
+  mask:
+    url("/icons/wave.svg") top / 100% var(--wave) no-repeat,
+    linear-gradient(#000 0 0) bottom / 100% calc(100% - var(--wave) + 1px)
+      no-repeat;
+
+  &-content {
+    max-width: var(--content);
+    margin: 0 auto;
+  }
+
+  // Titre façon BD : ombre Papier nette décalée sous les lettres.
+  &-title {
+    margin: 0 0 32px;
+    font-family: var(--font-display);
+    font-size: clamp(28px, 5vw, 60px);
+    font-weight: 400;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    text-shadow: 3px 3px 0 var(--papier);
+
+    // Mot-clé : le surlignage du hero inversé (bloc Abysse, texte Toxine), en relief cartoon.
+    mark {
+      display: inline-block;
+      padding: 0 0.16em 0.04em;
+      background: var(--abysse);
+      color: var(--toxine);
+      text-shadow: none;
+      box-shadow: 4px 4px 0 var(--papier);
+      transform: skewX(-8deg);
+    }
+  }
+
+  // Le paragraphe devient une carte cartoon : fond Papier, contour Abysse, ombre nette.
+  &-text {
+    max-width: 56ch;
+    margin: 0 auto;
+    padding: 20px 24px;
+    border: 3px solid var(--abysse);
+    border-radius: 12px;
+    background: var(--papier);
+    box-shadow: var(--shadow) var(--shadow) 0 var(--abysse);
+    font-family: var(--font-mono);
+    font-size: clamp(14px, 1.4vw, 16px);
+    font-weight: 500;
+    line-height: 1.7;
+    text-wrap: pretty;
+  }
+
+  // Éclairs cartoon : remplissage Papier, contour Abysse, ombre Abysse nette.
+  // La taille suit la place disponible dans la marge, sans dépasser --size.
+  &-bolt {
+    position: absolute;
+    z-index: -1;
+    top: var(--y);
+    left: var(--x);
+    width: min(var(--size), calc(var(--gutter) * 0.55));
+    aspect-ratio: 1;
+    translate: -50% -50%;
+    transform: rotate(var(--tilt));
+    animation: hero-float 6s ease-in-out var(--delay) infinite alternate;
+
+    svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      filter: drop-shadow(
+        calc(var(--shadow) * 0.75) calc(var(--shadow) * 0.75) 0 var(--abysse)
+      );
+    }
+
+    path {
+      fill: var(--papier);
+      stroke: var(--abysse);
+      stroke-width: 3px;
+      stroke-linejoin: round;
+      vector-effect: non-scaling-stroke;
+    }
+
+    // Arrivée au défilement : chaque éclair grossit en entrant à l'écran, donc de haut en bas.
+    // Les navigateurs sans animation-timeline gardent simplement le flottement.
+    @supports (animation-timeline: view()) {
+      animation:
+        hero-float 6s ease-in-out var(--delay) infinite alternate,
+        reflexes-zap linear both;
+      animation-timeline: auto, view();
+      animation-range:
+        normal,
+        entry 0% entry 100%;
+    }
+
+    @include bp.reduced-motion {
+      animation: none;
+    }
+  }
+
+  // En dessous de 1100px, les marges deviennent trop étroites : seuls les quatre éclairs
+  // des coins restent, rangés dans les marges haute et basse pour ne jamais toucher le texte.
+  @include bp.below(bp.$lg) {
+    padding-top: calc(var(--wave) + 88px);
+    padding-bottom: 112px;
+
+    &-bolt {
+      width: clamp(36px, 6vw, 56px);
+      translate: -50% 0;
+
+      &:nth-of-type(even) {
+        display: none;
+      }
+
+      &:nth-of-type(1),
+      &:nth-of-type(5) {
+        top: calc(var(--wave) + 12px);
+      }
+
+      &:nth-of-type(3),
+      &:nth-of-type(7) {
+        top: auto;
+        bottom: 28px;
+      }
+
+      &:nth-of-type(1),
+      &:nth-of-type(3) {
+        left: 14%;
+      }
+
+      &:nth-of-type(5),
+      &:nth-of-type(7) {
+        left: 86%;
+      }
+    }
+  }
+
+  @include bp.below(bp.$sm) {
+    --shadow: 4px;
+
+    padding-inline: 16px;
+
+    &-title {
+      text-shadow: 2px 2px 0 var(--papier);
+    }
+
+    &-text {
+      padding: 16px 18px;
+    }
+  }
+}
+
+@keyframes reflexes-zap {
+  from {
+    opacity: 0;
+    scale: 0.2;
+  }
+}
