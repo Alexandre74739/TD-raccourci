@@ -1,0 +1,153 @@
+@use "../abstracts/breakpoints" as bp;
+@use "../abstracts/mixins";
+
+// Hero de la page d'accueil (gabarit : src/sections/hero.js).
+// Une colonne centrée sur toute la hauteur de l'écran, trois icônes qui flottent en fond.
+// Il sort du conteneur de <main> pour placer les icônes sur toute la largeur.
+.hero {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100vw;
+  min-height: calc(100svh - var(--header-height));
+  margin-top: calc(-1 * var(--main-padding-top));
+  margin-inline: calc(50% - 50vw);
+  padding: 48px 20px;
+  overflow: hidden;
+  color: var(--papier);
+  font-family: var(--font-mono);
+  text-align: center;
+
+  a,
+  button {
+    @include mixins.focus-ring;
+  }
+
+  &-content {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+  }
+
+  &-title {
+    margin: 0 0 28px;
+    font-family: var(--font-display);
+    font-size: clamp(40px, 6vw, 84px);
+    font-weight: 400;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    text-wrap: balance;
+
+    // Mot-clé surligné : bloc Toxine penché comme le logotype.
+    mark {
+      display: inline-block;
+      padding: 0.04em 0.14em 0;
+      background: var(--toxine);
+      color: var(--abysse);
+      transform: skewX(-8deg);
+    }
+  }
+
+  &-lead {
+    max-width: 44ch;
+    margin: 0 auto;
+    color: var(--papier-60);
+    font-size: 16px;
+    line-height: 1.7;
+  }
+
+  &-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 40px;
+
+    .button {
+      padding: 13px 20px;
+      font-size: 14px;
+    }
+  }
+
+  // Les icônes : tailles différentes, inclinaisons opposées, rythmes décalés.
+  // Le fichier SVG sert de masque, la couleur vient de la charte.
+  &-icon {
+    position: absolute;
+    aspect-ratio: 1;
+    background: var(--papier-30);
+    mask: var(--icon) center / contain no-repeat;
+    transform: rotate(var(--tilt));
+    animation: hero-float var(--duration) ease-in-out infinite alternate;
+
+    &--key {
+      --icon: url("/icons/ctrl.svg");
+      --tilt: 12deg;
+      --duration: 7s;
+
+      top: 7%;
+      right: 5vw;
+      width: clamp(110px, 15vw, 230px);
+    }
+
+    &--cursor {
+      --icon: url("/icons/cursor.svg");
+      --tilt: -14deg;
+      --duration: 5s;
+
+      bottom: 16%;
+      left: 11vw;
+      width: clamp(56px, 7vw, 110px);
+      animation-delay: -2s;
+    }
+
+    &--bolt {
+      --icon: url("/icons/bolt.svg");
+      --tilt: 10deg;
+      --duration: 6s;
+
+      right: 14vw;
+      bottom: 12%;
+      width: clamp(72px, 10vw, 160px);
+      animation-delay: -4s;
+    }
+
+    @include bp.reduced-motion {
+      animation: none;
+    }
+  }
+
+  @include bp.below(bp.$sm) {
+    &-actions .button {
+      flex: 1 1 100%;
+      justify-content: center;
+    }
+
+    // Sur mobile, les icônes passent dans les coins et s'effacent derrière le texte.
+    &-icon {
+      opacity: 0.5;
+
+      &--key {
+        top: 4%;
+        right: -24px;
+      }
+
+      &--cursor {
+        bottom: 5%;
+        left: 6%;
+      }
+
+      &--bolt {
+        right: 6%;
+        bottom: 3%;
+      }
+    }
+  }
+}
+
+// Flottement léger : l'icône monte un peu en pivotant, puis redescend.
+@keyframes hero-float {
+  to {
+    transform: translateY(-16px) rotate(calc(var(--tilt) - 4deg));
+  }
+}

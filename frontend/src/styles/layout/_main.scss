@@ -1,9 +1,12 @@
 @use "../abstracts/breakpoints" as bp;
 
 main {
+  // Partagé avec le hero, qui annule ce padding pour se coller au header.
+  --main-padding-top: 56px;
+
   max-width: 1160px;
   margin: auto;
-  padding: 56px 28px 80px;
+  padding: var(--main-padding-top) 28px 80px;
   min-height: 75vh;
 
   &:focus {
@@ -11,6 +14,9 @@ main {
   }
 
   @include bp.below(bp.$sm) {
-    padding: 32px 20px 50px;
+    --main-padding-top: 32px;
+
+    padding-inline: 20px;
+    padding-bottom: 50px;
   }
 }

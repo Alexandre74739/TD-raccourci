@@ -3,7 +3,10 @@
 Shared catalogue of keyboard-shortcut cards. Each card is a Markdown file in `content/`.
 
 - `backend/`: Flask API (`app.py`), served under `/api`
-- `frontend/`: Vite + vanilla JS (`src/main.js`, `src/api.js`, `src/new-shortcut.js`, `src/style.css`)
+- `frontend/`: Vite + vanilla JS
+  - `src/main.js` (hash router and pages), `src/api.js`, `src/header.js`, `src/new-shortcut.js`
+  - `src/sections/`: home page sections (`hero.js`), each with its stylesheet in `src/styles/sections/`
+  - `src/styles/`: SCSS, imported in cascade order by `main.scss`: `abstracts/` (mixins, breakpoints), `base/`, `components/`, `layout/`, `sections/`, `pages/`
 - `compose.yaml`: runs both services; images are published to GHCR by `.github/workflows/docker-publish.yml`
 
 ## Brand guidelines (Brandboard)

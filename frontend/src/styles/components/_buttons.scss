@@ -38,4 +38,24 @@
       background: var(--acide);
     }
   }
+
+  // Bouton secondaire de la charte (transparent, contour Papier, effet cartoon)
+  &--secondary {
+    @include mixins.cartoon(var(--papier-30));
+    display: inline-flex;
+    align-items: center;
+    background: transparent;
+    color: var(--papier);
+    border-color: var(--papier);
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+
+    &:hover {
+      background: transparent;
+      color: var(--acide);
+      border-color: var(--acide);
+    }
+  }
 }
