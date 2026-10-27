@@ -51,18 +51,23 @@ function mainKey(event, layout) {
   return null;
 }
 
+// Modificateurs enfoncés au clavier, plus ceux choisis à l'écran (`held`), dans l'ordre normalisé.
+export function heldModifiers(event, held = []) {
+  const pressed = new Set(held);
+  if (event.ctrlKey) pressed.add('Ctrl');
+  if (event.altKey) pressed.add('Alt');
+  if (event.shiftKey) pressed.add('Shift');
+  if (event.metaKey) pressed.add('Meta');
+  return MODIFIERS.filter((name) => pressed.has(name));
+}
+
 // Combinaison d'un keydown au format normalisé, ou null pour un modificateur seul.
 // `held` ajoute des modificateurs choisis à l'écran plutôt qu'au clavier.
 // `layout` remplace la carte du clavier chargée (tests).
 export function fromKeyboardEvent(event, held = [], layout = keyboardLayout) {
   const key = mainKey(event, layout);
   if (key === null) return null;
-  const pressed = new Set(held);
-  if (event.ctrlKey) pressed.add('Ctrl');
-  if (event.altKey) pressed.add('Alt');
-  if (event.shiftKey) pressed.add('Shift');
-  if (event.metaKey) pressed.add('Meta');
-  return [...MODIFIERS.filter((name) => pressed.has(name)), key].join('+');
+  return [...heldModifiers(event, held), key].join('+');
 }
 
 export function keyLabel(name, apple = isApple()) {

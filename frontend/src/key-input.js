@@ -1,5 +1,5 @@
 import { escapeHtml as e } from './api.js';
-import { MODIFIERS, formatKeys, fromKeyboardEvent, keyLabel, loadKeyboardLayout } from './keys.js';
+import { MODIFIERS, formatKeys, fromKeyboardEvent, heldModifiers, keyLabel, loadKeyboardLayout } from './keys.js';
 
 // Champ de touches : on fait la combinaison au clavier au lieu de l'écrire.
 // La valeur lisible est affichée, la valeur normalisée part dans un champ caché `name`.
@@ -36,6 +36,18 @@ export function bindKeyField(field) {
     buttons.forEach((button) => button.setAttribute('aria-pressed', 'false'));
     display.placeholder = placeholder;
   };
+  // Pendant l'appui sur des modificateurs, le champ montre « Ctrl + … » : sans cela, on croit
+  // que Ctrl n'est pas pris en compte. Au relâchement, il revient à la combinaison enregistrée.
+  // `pending` : des modificateurs sont enfoncés sans touche principale. Une combinaison qui
+  // vient d'être enregistrée reste affichée même si on relâche Ctrl après P.
+  let pending = false;
+  const preview = (event) => {
+    const modifiers = heldModifiers(event, [...held]);
+    pending = modifiers.length > 0;
+    display.value = pending
+      ? `${formatKeys(modifiers.join('+'))} + …`
+      : (value.value ? formatKeys(value.value) : '');
+  };
   const set = (keys) => {
     value.value = keys;
     display.value = keys ? formatKeys(keys) : '';
@@ -48,9 +60,17 @@ export function bindKeyField(field) {
     // Sans cela, la combinaison déclencherait aussi son action dans la page (Entrée envoie le formulaire…).
     event.preventDefault();
     const keys = fromKeyboardEvent(event, [...held]);
-    if (!keys) return;
+    if (!keys) return preview(event);
+    pending = false;
     set(keys);
     release();
+  });
+  display.addEventListener('keyup', (event) => {
+    if (pending) preview(event);
+  });
+  display.addEventListener('blur', () => {
+    pending = false;
+    display.value = value.value ? formatKeys(value.value) : '';
   });
   buttons.forEach((button) => button.addEventListener('click', () => {
     const { modifier } = button.dataset;
