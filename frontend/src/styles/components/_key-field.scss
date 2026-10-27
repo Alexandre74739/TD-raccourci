@@ -1,0 +1,16 @@
+// Champ de touches capturées au clavier (src/key-input.js) : le bouton Effacer reprend .key-toggle.
+.key-capture {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+// En lecture seule : on clique dedans pour faire la combinaison, pas pour écrire.
+.key-display {
+  cursor: pointer;
+  caret-color: transparent;
+}
+
+.key-clear {
+  flex: none;
+}
